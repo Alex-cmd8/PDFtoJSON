@@ -33,7 +33,8 @@
   "pelnomocnicy": [
     {
       // Imię i nazwisko pełnomocnika w mianowniku.
-      "imie_nazwisko": "Krystyna Mazowiecka"
+      "imie_nazwisko": "Krystyna Mazowiecka",
+      "pesel": 85120133547
     }
   ]
 }
