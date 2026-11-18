@@ -32,10 +32,10 @@ Zaprojektuj i zaimplementuj rozwiązanie, które:
 2.  rozpozna rodzaj dokumentu
 3.  wyodrębni informacje biznesowe istotne dla danego typu dokumentu,
 4.  wygeneruje:
-    - JSON dla każdego dokumentu zgodny z https://github.com/Urzad-Zamowien-Publicznych/hacknation-2026/blob/main/oczekiwane%20rezultaty
+    - JSON dla każdego dokumentu zgodny z https://github.com/Urzad-Zamowien-Publicznych/hacknation-2026/blob/main/oczekiwane-json
 
 Szczegółowa struktura danych:
-https://github.com/Urzad-Zamowien-Publicznych/hacknation-2026/blob/main/oczekiwane%20rezultaty/odwolanie.json
+https://github.com/Urzad-Zamowien-Publicznych/hacknation-2026/blob/main/oczekiwane-json/odwolanie.json
 
 zestawy treningowe:
 https://github.com/Urzad-Zamowien-Publicznych/hacknation-2026/blob/main/dane
