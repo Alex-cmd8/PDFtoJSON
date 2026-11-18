@@ -1,0 +1,23 @@
+{
+  OdwolanieKIO.data: '2025-10-13' // Data z nagłówka pierwszej strony, z linii: 'DD.MM.RRRR'.
+  OdwolanieKIO.czynnosc_dzien: '2025-10-01'  // Data czynności uruchamiającej bieg terminu odwołania dla pierwszego zarzutu (ISO YYYY-MM-DD). Jeśli brak wiarygodnej daty dla pierwszego zarzutu, zwróć null.
+  OdwolanieKIO.czynnosc_powod_id: 4 // Identyfikator powodu odwołania jako liczba całkowita 1-12 (bez zera wiodącego), ustalana WYŁĄCZNIE na podstawie pierwszego zarzutu: 1=Decyzja o odrzuceniu oferty, 2=Ogłoszenie wyboru oferty, 3=Decyzja o wykluczeniu wykonawcy, 4=Publikacja specyfikacji warunków zamówienia (SWZ), 5=Modyfikacja treści SWZ, 6=Odpowiedzi/wyjaśnienia do SWZ, 7=Zaniechanie odrzucenia oferty, 8=Zaniechanie wykluczenia wykonawcy, 9=Decyzja o unieważnieniu postępowania, 10=Zaniechanie unieważnienia postępowania, 11=Opis przedmiotu zamówienia (OPZ), 12=Projektowane postanowienia umowy.
+  OdwolanieKIO.czynnosc_opis: Publikacja specyfikacji warunków zamówienia (SWZ) // Kanoniczny opis zaskarżonej czynności zgodny 1:1 z czynnosc_powod_id i ustalany WYŁĄCZNIE z pierwszego zarzutu.
+  OdwolanieKIO.miejscowosc: Pruszków // Miejscowość z nagłówka pierwszej strony, z linii typu: 'X, dnia ...' albo 'X DD.MM.RRRR'.
+  
+  Odwolujacy[0].krs: 0000054588 // KRS Odwołującego lub Lidera konsorcjum podmiotów Odwołujących (jeśli występuje).
+  Odwolujacy[0].nazwa: STRABAG Sp. z o.o. // Pełna nazwa podmiotu opisanego w tekście jako Odwołujący (sekcja 'Odwołujący' / wykonawca wnoszący odwołanie). Jeśli występuje konsorcjum, podaj dane Lidera konsorcjum z dopiskiem "(Lider konsorcjum)"
+  Odwolujacy[0].nip: null // NIP Odwołującego lub Lidera konsorcjum podmiotów Odwołujących (jeśli występuje).
+  Odwolujacy[0].regon: null // REGON Odwołującego lub Lidera konsorcjum podmiotów Odwołujących (jeśli występuje).
+  
+  Zamawiajacy[0].krs: null //KRS Zamawiającego (jeśli jawnie podany przy Zamawiającym). 
+  Zamawiajacy[0].nazwa: Filharmonia Pomorska im. Ignacego Jana Paderewskiego // Pełna nazwa podmiotu opisanego w tekście jako Zamawiający (sekcja 'Zamawiający'). 
+  Zamawiajacy[0].nip: '5540240549' //NIP Zamawiającego (jeśli jawnie podany przy Zamawiającym). 
+  Zamawiajacy[0].regon: 000279077 // REGON Zamawiającego (jeśli jawnie podany przy Zamawiającym). 
+  
+  ZamowieniePubliczne.numer_bzp: null //Numer ogłoszenia w BZP (jeśli występuje). Format: 'YYYY/BZP ########' (opcjonalnie '/##' dla korekt), bez spacji po normalizacji. NIE wpisuj tu numerów TED typu '363730-2025'. Jeśli brak w dokumencie / 'nie podano' → null.
+  ZamowieniePubliczne.numer_postepowania: null // Numer referencyjny/nr postępowania/numer wewnętrzny (ID po etykiecie), np. 'ZP.039.2025', 'DZP.260.11.2025', 'V.ROZ.2710.125.2025', 'ZSCKR/822/2025', '25/WNP-000021' albo 'KP 40/10/2025'. Szukaj po etykietach: 'Numer referencyjny', 'Numer postępowania', 'Numer postępowania nadany przez Zamawiającego', 'Znak sprawy', 'Oznaczenie sprawy', 'Znak postępowania', 'Sygnatura:'. Zwróć WYŁĄCZNIE sam identyfikator (to co po ':'), nie zwracaj słów typu 'sprawy', 'postępowania', 'nadany', 'znak', 'sygnatura'. Jeśli w środku identyfikatora są zbędne spacje z OCR (np. 'ZP .271.21.2025') usuń je; jeśli jest jedna naturalna spacja (np. 'KP 40/10/2025') zachowaj ją.
+  ZamowieniePubliczne.numer_ted: 641651-2025 // Numer TED (jeśli występuje). Zwykle format: 'NNNNNN-YYYY' (np. '363730-2025'). Może też wystąpić jako 'YYYY/S ###-NNNNNN' — zapisz jako 'NNNNNN-YYYY'. Jeśli brak w dokumencie / 'nie podano' → null.
+  ZamowieniePubliczne.tytul: Wykonanie robót budowlanych oraz dostawa i montaż wyposażenia w ramach zadania, polegającego na przebudowie i rozbudowie Filharmonii Pomorskiej w Bydgoszczy, mieszczącej się przy ul. Andrzeja Szwalbego 6 w Bydgoszczy
+ 
+}
