@@ -1,13 +1,26 @@
 {
+  // Mocodawca – podmiot udzielający pełnomocnictwa.
   "mocodawca": [
     {
       "data": {
+        // Imię i nazwisko mocodawcy, jeśli jest osobą fizyczną.
+        // W przypadku osoby prawnej: null.
         "imie_nazwisko": null,
+
+        // Numer KRS mocodawcy będącego osobą prawną.
         "krs": "0000244633",
+
+        // Pełna nazwa mocodawcy.
         "nazwa": "FAMBUD",
+
+        // Numer NIP mocodawcy.
         "nip": "8361772283",
+
+        // Typ mocodawcy: "osoba_prawna" lub "osoba_fizyczna".
         "typ": "osoba_prawna"
       },
+
+      // Osoby podpisujące w imieniu mocodawcy.
       "podpisujacy": [
         {
           "imie_nazwisko": "Paweł Podolski"
@@ -15,16 +28,12 @@
       ]
     }
   ],
+
+  // Osoby otrzymujące pełnomocnictwo.
   "pelnomocnicy": [
     {
+      // Imię i nazwisko pełnomocnika w mianowniku.
       "imie_nazwisko": "Krystyna Mazowiecka"
     }
-  ],
-  "_comments": {
-    "mocodawca[0].data.imie_nazwisko": "Imię i nazwisko mocodawcy, jeśli jest osobą fizyczną (osoba_fizyczna).",
-    "mocodawca[0].data.nazwa": "Pełna nazwa mocodawcy (podmiot udzielający pełnomocnictwa). W dokumentach KIO mocodawca bywa opisany jako 'Odwołujący – ...' albo 'Wykonawca – ...' (to jest mocodawca). Często występuje też zapis 'tj.: <nazwa>' – wtedy <nazwa> to mocodawca. Nie wybieraj Zamawiającego ani pełnomocnika jako mocodawcy. Uwaga na stopki kancelarii (mogą mieć własny KRS/NIP) – ignoruj identyfikatory kancelarii. Jeśli w tekście występuje krótka forma typu 'XYZ Sp. z o.o.' oraz długa forma rejestrowa, preferuj krótką formę.",
-    "mocodawca[0].data.typ": "Typ mocodawcy: 'osoba_prawna' albo 'osoba_fizyczna'. Jeśli tekst wskazuje urząd/instytucję – osoba_prawna; jeśli pełnomocnictwa udziela konkretna osoba – osoba_fizyczna.",
-    "mocodawca[0].podpisujacy[0].imie_nazwisko": "Imię i nazwisko osoby podpisującej po stronie mocodawcy.",
-    "pelnomocnicy[0].imie_nazwisko": "Imię i nazwisko pełnomocnika (canonical w mianowniku). Wybierz osobę, której udzielono pełnomocnictwa (po frazach typu 'udzielam/udzielamy pełnomocnictwa', 'upoważniam', 'ustanawiam pełnomocnikiem'). Nie wybieraj Zamawiającego ani mocodawcy."
-  }
+  ]
 }
