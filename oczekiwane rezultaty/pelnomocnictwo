@@ -1,0 +1,9 @@
+{
+  mocodawca[0].data.imie_nazwisko: null //Imię i nazwisko mocodawcy, jeśli jest osobą fizyczną (osoba_fizyczna).
+  mocodawca[0].data.krs: '0000244633'
+  mocodawca[0].data.nazwa: FAMBUD //Pełna nazwa mocodawcy (podmiot udzielający pełnomocnictwa). W dokumentach KIO mocodawca bywa opisany jako 'Odwołujący – ...' albo 'Wykonawca – ...' (to jest mocodawca). Często występuje też zapis 'tj.: <nazwa>' – wtedy <nazwa> to mocodawca. Nie wybieraj Zamawiającego ani pełnomocnika jako mocodawcy. Uwaga na stopki kancelarii (mogą mieć własny KRS/NIP) – ignoruj identyfikatory kancelarii. Jeśli w tekście występuje krótka forma typu 'XYZ Sp. z o.o.' oraz dłuższa forma rejestrowa, preferuj krótką formę.
+  mocodawca[0].data.nip: '8361772283' 
+  mocodawca[0].data.typ: osoba_prawna //Typ mocodawcy: 'osoba_prawna' albo 'osoba_fizyczna'. Jeśli tekst wskazuje urząd/instytucję – osoba_prawna; jeśli pełnomocnictwa udziela konkretna osoba – osoba_fizyczna.
+  mocodawca[0].podpisujacy[0].imie_nazwisko: Paweł Podolski //i nazwisko osoby podpisującej po stronie mocodawcy.
+  pelnomocnicy[0].imie_nazwisko: Krystyna Mazowiecka //Imię i nazwisko pełnomocnika (canonical w mianowniku). Wybierz osobę, której udzielono pełnomocnictwa (po frazach typu 'udzielam/udzielamy pełnomocnictwa', 'upoważniam', 'ustanawiam pełnomocnikiem'). Nie wybieraj Zamawiającego ani mocodawcy.
+}
