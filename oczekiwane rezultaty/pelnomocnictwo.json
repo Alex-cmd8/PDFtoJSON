@@ -1,5 +1,5 @@
 {
-  // Mocodawca – podmiot udzielający pełnomocnictwa.
+  // Mocodawca – podmiot udzielający pełnomocnictwa. może być więcej niż 1 (konsorcjum wspólnie)
   "mocodawca": [
     {
       "data": {
