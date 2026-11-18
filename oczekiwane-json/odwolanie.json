@@ -11,7 +11,8 @@
       "krs": "0000054588", // KRS Odwołującego lub Lidera konsorcjum podmiotów Odwołujących (jeśli występuje).
       "nazwa": "STRABAG Sp. z o.o.", // Pełna nazwa podmiotu opisanego w tekście jako Odwołujący (sekcja 'Odwołujący' / wykonawca wnoszący odwołanie). Jeśli występuje konsorcjum, podaj nazwę Lidera konsorcjum.
       "nip": null, // NIP Odwołującego lub Lidera konsorcjum podmiotów Odwołujących (jeśli występuje).
-      "regon": null // REGON Odwołującego lub Lidera konsorcjum podmiotów Odwołujących (jeśli występuje).
+      "regon": null, // REGON Odwołującego lub Lidera konsorcjum podmiotów Odwołujących (jeśli występuje).
+      "przez-pelnomocnika": 1, //1- tak, 0- nie
       "pelnomocnik": {
         "imie_nazwisko": "Marcel Kielce", //imię i nazwisko jeśli występuje pełnomocnik odwołującego
         "nazwa": "Kancelaria Radców Prawnych" //nazwa podmiotu zatrudniającego pełnomocnika
