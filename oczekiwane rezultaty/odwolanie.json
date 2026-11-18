@@ -12,6 +12,11 @@
       "nazwa": "STRABAG Sp. z o.o.", // Pełna nazwa podmiotu opisanego w tekście jako Odwołujący (sekcja 'Odwołujący' / wykonawca wnoszący odwołanie). Jeśli występuje konsorcjum, podaj nazwę Lidera konsorcjum.
       "nip": null, // NIP Odwołującego lub Lidera konsorcjum podmiotów Odwołujących (jeśli występuje).
       "regon": null // REGON Odwołującego lub Lidera konsorcjum podmiotów Odwołujących (jeśli występuje).
+      "pelnomocnik": {
+        "imie_nazwisko": "Marcel Kielce", //imię i nazwisko jeśli występuje pełnomocnik odwołującego
+        "nazwa": "Kancelaria Radców Prawnych" //nazwa podmiotu zatrudniającego pełnomocnika
+        "mail": "info@prawnik.xy" // adres email kontaktowy do pełnomocnika
+      }
     }
   ],
   "Zamawiajacy": [
@@ -19,7 +24,8 @@
       "krs": null, // KRS Zamawiającego (jeśli jawnie podany przy Zamawiającym).
       "nazwa": "Filharmonia Pomorska im. Ignacego Jana Paderewskiego", // Pełna nazwa podmiotu opisanego w tekście jako Zamawiający (sekcja 'Zamawiający').
       "nip": "5540240549", // NIP Zamawiającego (jeśli jawnie podany przy Zamawiającym).
-      "regon": "000279077" // REGON Zamawiającego (jeśli jawnie podany przy Zamawiającym).
+      "regon": "000279077", // REGON Zamawiającego (jeśli jawnie podany przy Zamawiającym).
+      "prowadzacy_postepowanie": null // null - jeśli brak informacji, 1 - jeśli występuje więcej niż jeden zamawiający i jest oznaczony jako "prowadzacy postępowanie"/"lider postępowania" lub 0 - jeśli występuje wiecej niz jeden zamawiajacy i nie został wskazany jako prowadzacy postępowanie lub lider postępowania
     }
   ],
   "ZamowieniePubliczne": {
