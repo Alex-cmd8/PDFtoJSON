@@ -26,13 +26,14 @@ Najciekawsze rozwiązania mają szansę stać się podstawą pilotażowych wdro�
 
 # 2. Wyzwanie
 
+### Opis
+
 Zaprojektuj i zaimplementuj rozwiązanie, które:
 
-1.  przyjmie dokument PDF składający się na odwołanie: dokument z treścią odwolania, pełnomocnictwo, dokument potwierdzenia przelewu
+1.  przyjmie dokument PDF składający się na odwołanie: dokument z treścią odwołania, pełnomocnictwo, dokument potwierdzenia przelewu
 2.  rozpozna rodzaj dokumentu
 3.  wyodrębni informacje biznesowe istotne dla danego typu dokumentu,
-4.  wygeneruje:
-    - JSON dla każdego dokumentu zgodny z https://github.com/Urzad-Zamowien-Publicznych/hacknation-2026/blob/main/oczekiwane-json
+4.  wygeneruje JSON dla każdego dokumentu zgodny z https://github.com/Urzad-Zamowien-Publicznych/hacknation-2026/blob/main/oczekiwane-json
 
 Szczegółowa struktura danych:
 https://github.com/Urzad-Zamowien-Publicznych/hacknation-2026/blob/main/oczekiwane-json/odwolanie.json
@@ -40,9 +41,16 @@ https://github.com/Urzad-Zamowien-Publicznych/hacknation-2026/blob/main/oczekiwa
 zestawy treningowe:
 https://github.com/Urzad-Zamowien-Publicznych/hacknation-2026/blob/main/dane
 
+### Wymogi techniczne
+
+Docelowa aplikacja powinna:
+
+- być opracowana w języku **Python 3.13+**
+- zawierać plik ```requirements.txt``` pozwalający na szybkie zainstalowanie pozostałych zależności projektu (np. poprzez ```pip install```)
+
 # 3. Oczekiwany rezultat
 
-Oczekiwanym rezultatem jest działająca aplikacja pobierająca plik PDF i zwracająca pliki JSON w ustalonym formacie i strukturze.
+Oczekiwanym rezultatem jest działająca aplikacja ładująca plik PDF i zwracająca pliki JSON w ustalonym formacie i strukturze.
 
 Rozwiązanie powinno zawierać:
 
@@ -52,37 +60,47 @@ Odpowiedzialny za:
 
 - analizę dokumentów,
 
-- ekstrakcję informacji,
-
 - klasyfikację dokumentów,
+
+- ekstrakcję informacji,
 
 - budowę modelu danych.
 
 ### Interfejs wykonawczy
 
-Interfejs umożliwiający uruchomienie działania aplikacji poprzez CLI, wrapper script (np. plik start.bat), lub inne analogiczne rozwiązanie.
+Interfejs umożliwiający uruchomienie działania aplikacji poprzez CLI, wrapper script (np. plik ```start.bat```), lub inne analogiczne rozwiązanie.
 
 ### Foldery input/output
 
-Foldery o nazwie ```input``` oraz ```output```, znajdujące się w folderze głównym aplikacji. Folder ```input``` użyty zostanie do przekazywania plików odwołań do aplikacji, podczas gdy folder ```output``` zawierać będzie wynikowe JSONy
+Foldery o nazwie ```input``` oraz ```output```, znajdujące się w folderze głównym aplikacji. Folder ```input``` użyty zostanie do przekazywania analizowanych plików do aplikacji, podczas gdy folder ```output``` zawierać będzie wynikowe pliki JSON.
 
 ### Wynik działania
 
-Pliki JSON w folderze ```./output```, ułożone w strukturze drzewa:
+Pliki JSON w folderze ```./output```, ułożone w strukturze drzewa, gdzie każdy wynikowy **JSON nazwany jest tak samo jak plik z katalogu input któremu odpowiada**:
 
 ```
 │output
 ├── case1
-│   ├── odwolanie.json
-│   ├── pelnomocnictwo.json
-│   ├── pelnomocnictwo.json
-│   └── przelew.json
+│   ├── odwolanie_nr_1.json
+│   ├── pelnomocnictwo_nr_1.json
+│   ├── pelnomocnictwo_nr_2.json
+│   └── przelew_nr_1.json
 ├── case2
-│   ├── odwolanie.json
-│   ├── pelnomocnictwo.json
-│   └── przelew.json
+│   ├── odwolanie_nr_2.json
+│   ├── pelnomocnictwo_nr_3.json
+│   └── przelew_nr_2.json
 ├── case3
 ...
+```
+```
+│input
+├── odwolanie_nr_1.pdf
+├── odwolanie_nr_2.pdf
+├── pelnomocnictwo_nr_1.pdf
+├── pelnomocnictwo_nr_2.pdf
+├── pelnomocnictwo_nr_3.pdf
+├── przelew_nr_1.pdf
+├── przelew_nr_2.pdf
 ```
 
 # 4. Wymagania formalne
@@ -125,7 +143,7 @@ Udostępniony uczestnikom podczas realizacji wyzwania.
 
 ### Zbiór testowy
 
-Nieudostępniony uczestnikom przed oceną.
+Nieudostępniany uczestnikom.
 
 Zbiór testowy będzie zawierał kompletne sprawy administracyjne przygotowane przez organizatora.
 
