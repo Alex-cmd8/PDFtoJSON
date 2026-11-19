@@ -85,13 +85,17 @@ Pliki JSON w folderze ```./output```, ułożone w strukturze drzewa, gdzie każd
 ```
 ```
 │input
-├── odwolanie_nr_1.pdf
-├── odwolanie_nr_2.pdf
-├── pelnomocnictwo_nr_1.pdf
-├── pelnomocnictwo_nr_2.pdf
-├── pelnomocnictwo_nr_3.pdf
-├── przelew_nr_1.pdf
-├── przelew_nr_2.pdf
+├── case1
+│   ├── odwolanie_nr_1.pdf
+│   ├── pelnomocnictwo_nr_1.pdf
+│   ├── pelnomocnictwo_nr_2.pdf
+│   └── przelew_nr_1.pdf
+├── case2
+│   ├── odwolanie_nr_2.pdf
+│   ├── pelnomocnictwo_nr_3.pdf
+│   └── przelew_nr_2.pdf
+├── case3
+...
 ```
 
 # 4. Wymagania formalne
