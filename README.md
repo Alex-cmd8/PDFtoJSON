@@ -26,8 +26,6 @@ Najciekawsze rozwiązania mają szansę stać się podstawą pilotażowych wdro�
 
 # 2. Wyzwanie
 
-### Opis
-
 Zaprojektuj i zaimplementuj rozwiązanie, które:
 
 1.  przyjmie dokument PDF składający się na odwołanie: dokument z treścią odwołania, pełnomocnictwo, dokument potwierdzenia przelewu
@@ -40,13 +38,6 @@ https://github.com/Urzad-Zamowien-Publicznych/hacknation-2026/blob/main/oczekiwa
 
 zestawy treningowe:
 https://github.com/Urzad-Zamowien-Publicznych/hacknation-2026/blob/main/dane
-
-### Wymogi techniczne
-
-Docelowa aplikacja powinna:
-
-- być opracowana w języku **Python 3.13+**
-- zawierać plik ```requirements.txt``` pozwalający na szybkie zainstalowanie pozostałych zależności projektu (np. poprzez ```pip install```)
 
 # 3. Oczekiwany rezultat
 
@@ -122,6 +113,10 @@ Dodatkowo uczestnicy mogą dostarczyć:
 # 5. Wymagania techniczne
 
 Rozwiązanie musi:
+
+- być opracowane w języku **Python 3.13+**
+  
+- zawierać plik ```requirements.txt``` pozwalający na szybkie zainstalowanie pozostałych zależności projektu (np. poprzez ```pip install```)
 
 - wykorzystywać wyłącznie komponenty open source (w tym otwarto-źródłowe modele językowe),
 
