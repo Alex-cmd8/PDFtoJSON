@@ -42,7 +42,7 @@ https://github.com/Urzad-Zamowien-Publicznych/hacknation-2026/blob/main/dane
 
 # 3. Oczekiwany rezultat
 
-Oczekiwanym rezultatem jest działająca aplikacja pobierająca plik PDF i zwracająca plik JSON w ustalonym formacie.
+Oczekiwanym rezultatem jest działająca aplikacja pobierająca plik PDF i zwracająca pliki JSON w ustalonym formacie i strukturze.
 
 Rozwiązanie powinno zawierać:
 
@@ -58,21 +58,32 @@ Odpowiedzialny za:
 
 - budowę modelu danych.
 
-### Interfejs użytkownika
+### Interfejs wykonawczy
 
-Umożliwiający:
+Interfejs umożliwiający uruchomienie działania aplikacji poprzez CLI, wrapper script (np. plik start.bat), lub inne analogiczne rozwiązanie.
 
-- załadowanie dokumentu,
+### Foldery input/output
 
-- uruchomienie procesu analizy,
-
-- podgląd wygenerowanych danych (najlepiej w układzie dzielonego widoku: dane wygenerowane \<\>dane źródłowe - umożliwiającego sprawną weryfikację danych bez konieczności oddzielnego otwierania dokumentów źródłowych).
+Foldery o nazwie ```input``` oraz ```output```, znajdujące się w folderze głównym aplikacji. Folder ```input``` użyty zostanie do przekazywania plików odwołań do aplikacji, podczas gdy folder ```output``` zawierać będzie wynikowe JSONy
 
 ### Wynik działania
 
-Generujący:
+Pliki JSON w folderze ```./output```, ułożone w strukturze drzewa:
 
-- JSON dla dokumentu
+```
+│output
+├── case1
+│   ├── odwolanie.json
+│   ├── pelnomocnictwo.json
+│   ├── pelnomocnictwo.json
+│   └── przelew.json
+├── case2
+│   ├── odwolanie.json
+│   ├── pelnomocnictwo.json
+│   └── przelew.json
+├── case3
+...
+```
 
 # 4. Wymagania formalne
 
