@@ -7,6 +7,11 @@ from ..engine import Engine
 from ..normalize import DATE_RX, norm_date
 from .common import Lexicon, PERSON_RX, flat, ids_in, fix_legal_form
 
+# nazwa podmiotu zakończona pełną formą prawną
+NAME_COMPLETE_RX = re.compile(r"(?:odpowiedzialności\w*|akcyjn[aą]|S\.A\.|sp\.\s?[jkp]\.|z\s?o\.o\.|"
+                              r"komandytow\w*|jawn[aą]|partnersk[aą])$", re.I)
+# słowa, które nie występują w imieniu i nazwisku osoby (kancelaria, spółka, zawód)
+ORG_WORD_RX = re.compile(r"kancelari|prawn|radc|adwokac|spółk|spolk|biur|partner|\bsp\b|\bs\.a\b", re.I)
 EMAIL_RX = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 
 
@@ -25,10 +30,16 @@ def _sections(lines: list[str], opts: dict) -> list[tuple[str, str, list[str]]]:
             # bywa NAD nią. Bierzemy ją tylko, gdy etykieta jest pusta, a linia wyżej nie jest adresem,
             # identyfikatorem ani częścią innego bloku z etykietą.
             inline = re.sub(r"^[^:]*:?", "", ln, count=1).strip(" |'")
-            if (kind in ("odwolujacy", "zamawiajacy") and not inline and out and out[-1][2]
-                    and out[-1][0] == "inne" and not non_name.match(out[-1][2][-1])
-                    and not re.search(r"\d{2}-\d{3}|Warszawa|Postępu", out[-1][2][-1])):
+            above_ok = (kind in ("odwolujacy", "zamawiajacy") and out and out[-1][2]
+                        and out[-1][0] == "inne" and not non_name.match(out[-1][2][-1])
+                        and not re.search(r"\d{2}-\d{3}|Warszawa|Postępu", out[-1][2][-1]))
+            if above_ok and not inline:
                 cur[2].append(out[-1][2].pop())
+            elif (kind in ("odwolujacy", "zamawiajacy") and re.match(r"[a-ząćęłńóśźż]", inline)
+                  and out and out[-1][2] and ":" not in out[-1][2][-1] and not non_name.match(out[-1][2][-1])):
+                # w etykiecie stoi tylko zakończenie nazwy (mała litera) → nazwa zaczyna się linię wyżej
+                label = re.match(r"^[^:]*", ln).group(0).rstrip()
+                cur = (kind, f"{label}: {out[-1][2].pop()} {inline}", [])
             out.append(cur)
             if kind == "inne" and re.match(r"(?:O\s?D\s?W|Działając)", ln):
                 break
@@ -75,6 +86,11 @@ def _entities(header: str, body: list[str], opts: dict) -> list[dict]:
                 and _is_continuation(ents[-1]["lines"][-1], ln)):
             ents[-1]["lines"].append(ln)
             continue
+        if name_buf and NAME_COMPLETE_RX.search(" ".join(name_buf)):
+            # nazwa zakończona formą prawną jest kompletna – kolejna linia (np. sama „Warszawa”) to adres
+            ents.append({"name": " ".join(name_buf), "sub": sub, "lines": [ln]})
+            name_buf = []
+            continue
         name_buf.append(ln)
     for e in ents:
         e["text"] = flat(" ".join(e["lines"]))
@@ -109,7 +125,10 @@ def _attorney(ent_text: str, lex: Lexicon, opts: dict) -> dict:
     first = lex.attorney_rx.match(rest)  # tytuł musi być PIERWSZY po frazie
     if not first:
         return none
-    out = {"przez": 1, "imie_nazwisko": first.group("person"), "nazwa": None, "mail": None}
+    person = first.group("person")
+    if person and ORG_WORD_RX.search(person):  # „radcę prawnego Kancelaria Prawna” – to nie osoba
+        person = None
+    out = {"przez": 1, "imie_nazwisko": person, "nazwa": None, "mail": None}
     # kancelaria: wyłącznie po etykiecie „adres do korespondencji:” (OCR: „korespondencii”)
     if am := re.search(r"adres do korespondencj?i+\s*:?\s*(.+?)(?:,?\s+(?:ul\.|al\.|pl\.|os\.)|,\s*\d{2}-\d{3}|$)",
                        rest, re.I):
@@ -356,7 +375,7 @@ def _action_llm_step(text, rule_result, doc_type, cfg, dictionary, trace):
 
 def _header(doc, opts: dict) -> tuple[str | None, str | None]:
     """Linia „Miejscowość, dnia DD.MM.RRRR” na pierwszej stronie (cała komórka = miejscowość + data)."""
-    rx = re.compile(rf"^\s*(?P<city>(?-i:[A-ZĄĆĘŁŃÓŚŹŻ])[\w\- ]{{1,40}}?),?\s+(?:dnia\s+)?{DATE_RX}"
+    rx = re.compile(rf"^\s*(?P<city>(?-i:[A-ZĄĆĘŁŃÓŚŹŻ])[\w\- ]{{1,40}}?)[,;]?\s+(?:dnia\s+)?{DATE_RX}"
                     r"\s*(?:r\.|roku)?\s*\.?\s*$", re.I)
     for line in doc.lines:
         if line.page > opts.get("header_max_page", 0):

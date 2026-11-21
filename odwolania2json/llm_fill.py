@@ -92,6 +92,9 @@ def _validate(kind: str, value, text: str):
         return v if v.lower() in text.lower() else None
     if kind == "person":
         # imię i nazwisko w mianowniku: każde słowo musi mieć w tekście słowo o tym samym rdzeniu
+        from .extractors.odwolanie import ORG_WORD_RX
+        if ORG_WORD_RX.search(str(value)):
+            return None
         words = str(value).split()
         tw = {_plain(w) for w in re.findall(r"[\w-]+", text)}
         ok = 2 <= len(words) <= 4 and all(

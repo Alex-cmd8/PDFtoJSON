@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Odwołania2JSON</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --text: #1b1f24; --muted: #5d6673; --line: #dfe3e8;
+    --accent: #1f5fbf; --accent-soft: #e7effb; --ok: #1d7a46; --ok-soft: #e3f4ea;
+    --warn: #8a5a00; --warn-soft: #fbf0d9; --bad: #b42318; --bad-soft: #fde8e6;
+    --llm: #6b3fb5; --llm-soft: #f0e9fb; --code: #f2f4f7;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111418; --panel: #191d23; --text: #e6e9ed; --muted: #9aa4b1; --line: #2c333c;
+      --accent: #7aa7ec; --accent-soft: #1c2a3f; --ok: #6fcf97; --ok-soft: #173225;
+      --warn: #e5b85c; --warn-soft: #3a2f16; --bad: #f28b82; --bad-soft: #3b1d1b;
+      --llm: #b89af0; --llm-soft: #2a2140; --code: #14181d;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.5 system-ui, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; margin-bottom: 20px; }
+  h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+  .chip { font-size: 12px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line);
+          background: var(--panel); color: var(--muted); white-space: nowrap; }
+  .chip.on { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+  .chip.off { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+
+  .drop { background: var(--panel); border: 2px dashed var(--line); border-radius: 12px; padding: 28px 20px;
+          text-align: center; transition: border-color .15s, background .15s; }
+  .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .drop p { margin: 0 0 14px; color: var(--muted); }
+  .drop strong { color: var(--text); }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  button, .btn { font: inherit; font-size: 14px; padding: 7px 14px; border-radius: 8px; cursor: pointer;
+                 border: 1px solid var(--line); background: var(--panel); color: var(--text); text-decoration: none; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button:disabled { opacity: .55; cursor: default; }
+  button:focus-visible, .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  input[type=file] { display: none; }
+
+  .queue { margin: 14px 0 0; padding: 0; list-style: none; font-size: 13px; color: var(--muted);
+           display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+  .queue li { background: var(--code); border-radius: 6px; padding: 2px 8px; }
+
+  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 22px 0 10px; }
+  .bar[hidden] { display: none; }
+  .bar .sum { color: var(--muted); font-size: 14px; margin-right: auto; }
+  .status { margin: 16px 0 0; color: var(--muted); font-size: 14px; min-height: 1.5em; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--line);
+             border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite;
+             vertical-align: -2px; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+  .card > summary { list-style: none; cursor: pointer; padding: 12px 16px; display: flex; flex-wrap: wrap;
+                    align-items: center; gap: 6px 10px; }
+  .card > summary::-webkit-details-marker { display: none; }
+  .card > summary::before { content: "▸"; color: var(--muted); width: 10px; transition: transform .15s; }
+  .card[open] > summary::before { transform: rotate(90deg); }
+  .fname { font-weight: 600; word-break: break-all; }
+  .meta { color: var(--muted); font-size: 13px; margin-left: auto; }
+  .badge { font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 6px; }
+  .t-odwolanie { background: var(--accent-soft); color: var(--accent); }
+  .t-pelnomocnictwo { background: var(--ok-soft); color: var(--ok); }
+  .t-przelew { background: var(--warn-soft); color: var(--warn); }
+  .t-none { background: var(--code); color: var(--muted); }
+  .t-err { background: var(--bad-soft); color: var(--bad); }
+  .t-ocr { background: var(--code); color: var(--muted); font-weight: 500; }
+
+  .tabs { display: flex; gap: 2px; padding: 0 12px; border-bottom: 1px solid var(--line); }
+  .tabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none;
+                 color: var(--muted); padding: 8px 10px; }
+  .tabs button.active { color: var(--text); border-bottom-color: var(--accent); }
+  .pane { padding: 12px 16px 16px; }
+  .pane[hidden] { display: none; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
+  td.path { font-family: var(--mono); font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+  td.val { word-break: break-word; }
+  td.null { color: var(--muted); font-style: italic; }
+  .src { font-size: 12px; padding: 1px 7px; border-radius: 6px; white-space: nowrap; }
+  .src-rule { background: var(--ok-soft); color: var(--ok); }
+  .src-llm { background: var(--llm-soft); color: var(--llm); }
+  .src-fix { background: var(--warn-soft); color: var(--warn); }
+  .tbl-wrap { overflow-x: auto; }
+
+  pre { margin: 0; background: var(--code); border-radius: 8px; padding: 12px; overflow: auto; max-height: 520px;
+        font: 12.5px/1.45 var(--mono); white-space: pre; }
+  .pane .tools { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .note { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+  .empty { color: var(--muted); padding: 6px 0; }
+  .rej { color: var(--bad); }
+  h3 { font-size: 14px; margin: 14px 0 6px; }
+
+  @media (max-width: 640px) {
+    .meta { margin-left: 0; width: 100%; }
+    td.path { white-space: normal; word-break: break-all; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Odwołania2JSON</h1>
+    <span class="sub">odwołanie · pełnomocnictwo · potwierdzenie przelewu → JSON</span>
+    <div class="chips" id="chips"></div>
+  </header>
+
+  <section class="drop" id="drop" aria-label="Wgrywanie dokumentów">
+    <p><strong>Przeciągnij tutaj pliki PDF</strong> albo folder sprawy.<br>
+       Dokumenty innego rodzaju zwracają pusty JSON <code>{}</code>.</p>
+    <div class="btns">
+      <button type="button" class="primary" id="pickFiles">Wybierz pliki PDF</button>
+      <button type="button" id="pickDir">Wybierz folder sprawy</button>
+      <button type="button" id="run" disabled>Przetwórz</button>
+    </div>
+    <input type="file" id="files" accept="application/pdf,.pdf" multiple>
+    <input type="file" id="dir" webkitdirectory multiple>
+    <ul class="queue" id="queue"></ul>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+  </section>
+
+  <div class="bar" id="bar" hidden>
+    <span class="sum" id="sum"></span>
+    <a class="btn" id="zip" href="#">Pobierz wszystkie JSON (ZIP)</a>
+  </div>
+  <div id="results"></div>
+</main>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const TYPE_LABEL = { odwolanie: "odwołanie", pelnomocnictwo: "pełnomocnictwo", przelew: "potwierdzenie przelewu" };
+let queue = [];
+
+// ---------------------------------------------------------------- status
+fetch("/api/status").then(r => r.json()).then(s => {
+  const llm = s.llm.available && s.llm.mode !== "off";
+  $("#chips").innerHTML =
+    `<span class="chip ${llm ? "on" : "off"}" title="Model językowy uzupełnia pola, których ścisłe reguły nie ustaliły">` +
+      (llm ? `LLM: ${esc(s.llm.model)}` : "LLM wyłączony – tylko reguły") + `</span>` +
+    `<span class="chip ${s.ocr ? "on" : "off"}" title="Rozpoznawanie tekstu na skanach (EasyOCR, CPU)">` +
+      (s.ocr ? "OCR skanów: tak" : "OCR niedostępny") + `</span>` +
+    `<span class="chip" title="Typy dokumentów z config/document_types/*.yaml">typy: ${s.types.length}</span>`;
+}).catch(() => {});
+
+// ---------------------------------------------------------------- wybór plików
+function setQueue(list) {
+  queue = list.filter(f => f.name.toLowerCase().endsWith(".pdf"));
+  $("#queue").innerHTML = queue.slice(0, 40).map(f => `<li>${esc(f.webkitRelativePath || f.name)}</li>`).join("") +
+    (queue.length > 40 ? `<li>… i ${queue.length - 40} więcej</li>` : "");
+  $("#run").disabled = !queue.length;
+  $("#status").textContent = queue.length ? `Wybrano plików PDF: ${queue.length}` :
+    (list.length ? "Wybrane pliki nie są plikami PDF." : "");
+}
+$("#pickFiles").onclick = () => $("#files").click();
+$("#pickDir").onclick = () => $("#dir").click();
+$("#files").onchange = (e) => setQueue([...e.target.files]);
+$("#dir").onchange = (e) => setQueue([...e.target.files]);
+
+const drop = $("#drop");
+["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", async (e) => {
+  const entries = [...e.dataTransfer.items].map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
+  const out = [];
+  async function walk(entry, prefix) {
+    if (entry.isFile) {
+      const f = await new Promise((res, rej) => entry.file(res, rej));
+      Object.defineProperty(f, "webkitRelativePath", { value: prefix + f.name });
+      out.push(f);
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      let batch;
+      do {
+        batch = await new Promise((res, rej) => reader.readEntries(res, rej));
+        for (const ch of batch) await walk(ch, prefix + entry.name + "/");
+      } while (batch.length);
+    }
+  }
+  if (entries.length) { for (const en of entries) await walk(en, ""); setQueue(out); }
+  else setQueue([...e.dataTransfer.files]);
+});
+
+// ---------------------------------------------------------------- przetwarzanie
+$("#run").onclick = async () => {
+  const fd = new FormData();
+  queue.forEach(f => fd.append("files", f, f.webkitRelativePath || f.name));
+  $("#run").disabled = true;
+  const t0 = Date.now();
+  $("#status").innerHTML = `<span class="spinner"></span>Przetwarzanie ${queue.length} plików… ` +
+    `(skany przez OCR trwają ok. 20–60 s na stronę)`;
+  try {
+    const r = await fetch("/api/process", { method: "POST", body: fd });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || r.statusText);
+    render(data);
+    $("#status").textContent = `Gotowe w ${((Date.now() - t0) / 1000).toFixed(1)} s. Wyniki zapisano też w: ${data.output_dir}`;
+  } catch (err) {
+    $("#status").innerHTML = `<span class="rej">Błąd: ${esc(err.message)}</span>`;
+  } finally {
+    $("#run").disabled = !queue.length;
+  }
+};
+
+// ---------------------------------------------------------------- widok wyników
+function flatten(obj, prefix = "", out = []) {
+  if (Array.isArray(obj)) {
+    if (!obj.length) out.push([prefix, []]);
+    obj.forEach((v, i) => flatten(v, `${prefix}[${i}]`, out));
+  } else if (obj && typeof obj === "object") {
+    const keys = Object.keys(obj);
+    if (!keys.length && prefix) out.push([prefix, {}]);
+    keys.forEach(k => flatten(obj[k], prefix ? `${prefix}.${k}` : k, out));
+  } else out.push([prefix, obj]);
+  return out;
+}
+
+function sourceOf(path, value, trace) {
+  if (value === null || value === undefined || (Array.isArray(value) && !value.length)) return "";
+  const fixed = (trace.ocr_corrections || []).some(c => path in c);
+  if (fixed) return `<span class="src src-fix" title="Poprawka typowego błędu OCR">OCR → poprawka</span>`;
+  const llm = ((trace.llm_fill || {}).sciezki || []);
+  if (llm.some(p => path === p || path.startsWith(p + "[") || path.startsWith(p + ".")))
+    return `<span class="src src-llm" title="Uzupełnione przez model; wartość zweryfikowana w tekście dokumentu">model</span>`;
+  return `<span class="src src-rule" title="Ścisła reguła z konfiguracji YAML">reguła</span>`;
+}
+
+function render(data) {
+  $("#bar").hidden = false;
+  $("#zip").href = `/api/batch/${encodeURIComponent(data.batch)}.zip`;
+  const n = data.items.length, typed = data.items.filter(i => i.doc_type).length;
+  $("#sum").textContent = `Plików: ${n} · rozpoznanych: ${typed} · innych (pusty JSON): ${n - typed}`;
+  $("#results").innerHTML = "";
+  data.items.forEach((it, idx) => $("#results").appendChild(card(it, idx === 0 && n <= 3)));
+}
+
+function card(it, open) {
+  const el = document.createElement("details");
+  el.className = "card";
+  el.open = open;
+  const type = it.error ? `<span class="badge t-err">błąd</span>` :
+    it.doc_type ? `<span class="badge t-${esc(it.doc_type)}">${esc(TYPE_LABEL[it.doc_type] || it.doc_type)}</span>` :
+    `<span class="badge t-none">inny dokument → {}</span>`;
+  const ocr = it.ocr_pages ? `<span class="badge t-ocr">skan · OCR ${it.ocr_pages} str.</span>` : "";
+  el.innerHTML = `<summary><span class="fname">${esc(it.name)}</span>${type}${ocr}
+      <span class="meta">${it.seconds} s</span></summary>
+    <div class="tabs" role="tablist">
+      <button type="button" class="active" data-p="data">Dane</button>
+      <button type="button" data-p="json">JSON</button>
+      <button type="button" data-p="trace">Ślad ekstrakcji</button>
+    </div>
+    <div class="pane" data-p="data">${dataPane(it)}</div>
+    <div class="pane" data-p="json" hidden>${jsonPane(it)}</div>
+    <div class="pane" data-p="trace" hidden>${tracePane(it)}</div>`;
+  el.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
+    el.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("active", x === b));
+    el.querySelectorAll(".pane").forEach(p => p.hidden = p.dataset.p !== b.dataset.p);
+  });
+  el.querySelector("[data-act=copy]").onclick = (e) => {
+    navigator.clipboard.writeText(JSON.stringify(it.result, null, 2));
+    e.target.textContent = "Skopiowano";
+    setTimeout(() => e.target.textContent = "Kopiuj", 1500);
+  };
+  el.querySelector("[data-act=save]").onclick = () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(it.result, null, 2)], { type: "application/json" }));
+    a.download = it.json_name.split("/").pop();
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+  return el;
+}
+
+function dataPane(it) {
+  if (it.error) return `<pre>${esc(it.error)}</pre>`;
+  if (!it.doc_type) return `<p class="empty">Dokument nie jest odwołaniem, pełnomocnictwem ani potwierdzeniem przelewu – wynik to pusty JSON <code>{}</code>.</p>`;
+  const rows = flatten(it.result).map(([p, v]) => {
+    const empty = v === null || (Array.isArray(v) && !v.length) || (v && typeof v === "object" && !Object.keys(v).length);
+    const shown = v === null ? "null" : Array.isArray(v) ? "[]" : typeof v === "object" ? "{}" : String(v);
+    return `<tr><td class="path">${esc(p)}</td><td class="val${empty ? " null" : ""}">${esc(shown)}</td>` +
+           `<td>${sourceOf(p, v, it.trace)}</td></tr>`;
+  }).join("");
+  return `<p class="note"><span class="src src-rule">reguła</span> ścisła reguła z YAML ·
+            <span class="src src-llm">model</span> uzupełnione przez LLM i sprawdzone w tekście ·
+            null = brak danych w dokumencie</p>
+          <div class="tbl-wrap"><table><thead><tr><th>Pole</th><th>Wartość</th><th>Źródło</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>`;
+}
+
+function jsonPane(it) {
+  return `<div class="tools"><button type="button" data-act="copy">Kopiuj</button>
+            <button type="button" data-act="save">Pobierz ${esc(it.json_name.split("/").pop())}</button></div>
+          <pre>${esc(JSON.stringify(it.result, null, 2))}</pre>`;
+}
+
+function tracePane(it) {
+  const t = it.trace || {};
+  let html = "";
+  const cls = t.classification || {};
+  const rows = Object.entries(cls).filter(([k]) => !k.startsWith("_")).map(([k, v]) =>
+    `<tr><td>${esc(TYPE_LABEL[k] || k)}</td><td>${v.score}</td><td>${v.min_score}</td>` +
+    `<td class="path">${esc((v.matched || []).join(" · "))}</td></tr>`).join("");
+  html += `<h3>Klasyfikacja (po treści, nie po nazwie pliku)</h3>
+    <div class="tbl-wrap"><table><thead><tr><th>Typ</th><th>Wynik</th><th>Próg</th><th>Dopasowane cechy</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+  if (cls._llm) html += `<p class="note">Szara strefa – decyzja modelu: <b>${esc(cls._llm.odpowiedz?.typ ?? "brak")}</b>
+    ${cls._llm.odpowiedz?.uzasadnienie ? "– " + esc(cls._llm.odpowiedz.uzasadnienie) : ""}</p>`;
+  const lf = t.llm_fill;
+  if (lf) {
+    const acc = Object.entries(lf.przyjete || {}), rej = Object.entries(lf.odrzucone || {});
+    html += `<h3>Model językowy – pola puste po regułach</h3>
+      <p class="note">Pytano o: ${esc((lf.pytanie || []).join(", ") || "–")}</p>` +
+      (acc.length ? `<div class="tbl-wrap"><table><tbody>${acc.map(([k, v]) =>
+        `<tr><td class="path">${esc(k)}</td><td class="val">${esc(JSON.stringify(v))}</td><td><span class="src src-llm">przyjęte</span></td></tr>`).join("")}</tbody></table></div>` : "") +
+      (rej.length ? `<div class="tbl-wrap"><table><tbody>${rej.map(([k, v]) =>
+        `<tr><td class="path">${esc(k)}</td><td class="val">${esc(JSON.stringify(v))}</td><td><span class="src rej" title="Brak oparcia w tekście dokumentu">odrzucone</span></td></tr>`).join("")}</tbody></table></div>` : "");
+  }
+  const rest = Object.fromEntries(Object.entries(t).filter(([k]) => !["classification", "llm_fill"].includes(k)));
+  html += `<h3>Pełny ślad (reguły, strony, fragmenty tekstu)</h3><pre>${esc(JSON.stringify(rest, null, 2))}</pre>`;
+  return html;
+}
+</script>
+</body>
+</html>

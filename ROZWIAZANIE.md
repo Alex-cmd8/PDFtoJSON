@@ -14,6 +14,25 @@ python run.py --input dane --output out
 
 Wymagania: Python 3.13+, `pip install -r requirements.txt`.
 
+### Interfejs WWW (wgrywanie dokumentów)
+
+```
+start_web.bat                   # http://127.0.0.1:8000 – otwiera się w przeglądarce
+python web.py --port 8080 --llm-mode off
+```
+
+Lokalny serwer (tylko biblioteka standardowa Pythona, bez dodatkowych zależności).
+Przeciągnij pliki PDF albo cały folder sprawy → dla każdego dokumentu:
+
+- rozpoznany typ (po treści) albo „inny dokument → `{}`”,
+- tabela pól z **źródłem każdej wartości**: ścisła reguła z YAML, model językowy
+  (wartość sprawdzona w tekście) albo poprawka typowego błędu OCR,
+- JSON do skopiowania / pobrania, wszystkie wyniki jako ZIP (`<sprawa>/<plik>.json`),
+- ślad ekstrakcji: punkty klasyfikacji, pytania do modelu, odpowiedzi przyjęte i odrzucone.
+
+Wyniki zapisywane są też w `output/web/<data-godzina>/`. Serwer domyślnie nasłuchuje tylko
+na tym komputerze (`--host 0.0.0.0`, aby udostępnić go w sieci lokalnej).
+
 ## Ocena jakości (F1)
 
 ```
