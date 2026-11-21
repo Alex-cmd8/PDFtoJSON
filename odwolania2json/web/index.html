@@ -230,10 +230,25 @@ function sourceOf(path, value, trace) {
   if (value === null || value === undefined || (Array.isArray(value) && !value.length)) return "";
   const fixed = (trace.ocr_corrections || []).some(c => path in c);
   if (fixed) return `<span class="src src-fix" title="Poprawka typowego błędu OCR">OCR → poprawka</span>`;
-  const llm = ((trace.llm_fill || {}).sciezki || []);
+  const llm = llmPaths(trace);
   if (llm.some(p => path === p || path.startsWith(p + "[") || path.startsWith(p + ".")))
     return `<span class="src src-llm" title="Uzupełnione przez model; wartość zweryfikowana w tekście dokumentu">model</span>`;
   return `<span class="src src-rule" title="Ścisła reguła z konfiguracji YAML">reguła</span>`;
+}
+
+// pola wpisane przez model: uzupełnianie pustych pól + zaskarżona czynność w odwołaniu
+function llmPaths(trace) {
+  const act = ((trace.fields || {}).czynnosc_llm || {});
+  return [...((trace.llm_fill || {}).sciezki || []), ...(act.sciezki || [])];
+}
+
+function llmSummary(it) {
+  const t = it.trace || {}, lf = t.llm_fill, act = (t.fields || {}).czynnosc_llm;
+  const n = llmPaths(t).length;
+  const asked = (lf && (lf.pytanie || []).length) || act;
+  if (n) return `Model językowy wpisał pól: <b>${n}</b> (oznaczone „model”); pozostałe ustaliły ścisłe reguły.`;
+  if (asked) return `Model był pytany o pola puste po regułach, ale żadna odpowiedź nie miała oparcia w tekście – zostały puste.`;
+  return `Model nie był potrzebny: ścisłe reguły ustaliły wszystkie pola (puste pola = brak danych w dokumencie).`;
 }
 
 function render(data) {
@@ -291,7 +306,8 @@ function dataPane(it) {
     return `<tr><td class="path">${esc(p)}</td><td class="val${empty ? " null" : ""}">${esc(shown)}</td>` +
            `<td>${sourceOf(p, v, it.trace)}</td></tr>`;
   }).join("");
-  return `<p class="note"><span class="src src-rule">reguła</span> ścisła reguła z YAML ·
+  return `<p class="note">${llmSummary(it)}</p>
+          <p class="note"><span class="src src-rule">reguła</span> ścisła reguła z YAML ·
             <span class="src src-llm">model</span> uzupełnione przez LLM i sprawdzone w tekście ·
             null = brak danych w dokumencie</p>
           <div class="tbl-wrap"><table><thead><tr><th>Pole</th><th>Wartość</th><th>Źródło</th></tr></thead>
@@ -326,6 +342,10 @@ function tracePane(it) {
       (rej.length ? `<div class="tbl-wrap"><table><tbody>${rej.map(([k, v]) =>
         `<tr><td class="path">${esc(k)}</td><td class="val">${esc(JSON.stringify(v))}</td><td><span class="src rej" title="Brak oparcia w tekście dokumentu">odrzucone</span></td></tr>`).join("")}</tbody></table></div>` : "");
   }
+  const act = (t.fields || {}).czynnosc_llm;
+  if (act) html += `<h3>Model językowy – zaskarżona czynność</h3>
+      <p class="note">Reguła: ${esc((t.fields.czynnosc || {}).regula || "–")} → model: <b>${esc(act.wynik || "–")}</b></p>
+      <pre>${esc(JSON.stringify(act.odpowiedz, null, 2))}</pre>`;
   const rest = Object.fromEntries(Object.entries(t).filter(([k]) => !["classification", "llm_fill"].includes(k)));
   html += `<h3>Pełny ślad (reguły, strony, fragmenty tekstu)</h3><pre>${esc(JSON.stringify(rest, null, 2))}</pre>`;
   return html;

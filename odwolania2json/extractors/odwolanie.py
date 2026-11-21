@@ -366,10 +366,15 @@ def _action_llm_step(text, rule_result, doc_type, cfg, dictionary, trace):
         info["data_z_cytatu"] = d
     if isinstance(d, str) and d not in dates_in_text:
         d = norm_date(d.strip()) or d  # model bywa niekonsekwentny w formacie („02.07.2025”)
+    date_from_model = True
     if d not in dates_in_text:
         info["data_odrzucona"] = d
         d = rule_result[0] if rule_result[1] == pid else None
+        date_from_model = False
     info["wynik"] = "przyjęto"
+    # które pola wyniku pochodzą od modelu (dla śladu i interfejsu WWW)
+    info["sciezki"] = ["OdwolanieKIO.czynnosc_powod_id", "OdwolanieKIO.czynnosc_opis"] + (
+        ["OdwolanieKIO.czynnosc_dzien"] if date_from_model and d else [])
     return d, pid, by_id[pid]["opis"]
 
 
