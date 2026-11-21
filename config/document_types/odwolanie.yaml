@@ -17,15 +17,26 @@ classify:
 extractor: odwolanie
 
 options:
+  # miasta z polskimi znakami – przywracane, gdy OCR je zgubi („Łódz” → „Łódź”)
+  city_names: [Łódź, Kraków, Gdańsk, Poznań, Wrocław, Białystok, Toruń, Rzeszów, Kielce, Częstochowa,
+               Bielsko-Biała, Gorzów Wielkopolski, Zielona Góra, Kędzierzyn-Koźle, Jelenia Góra, Tychy,
+               Włocławek, Płock, Elbląg, Koszalin, Słupsk, Gliwice, Zabrze, Bytom, Chorzów, Ruda Śląska,
+               Rybnik, Świętochłowice, Siemianowice Śląskie, Dąbrowa Górnicza, Jastrzębie-Zdrój, Żory,
+               Piła, Łomża, Ostrołęka, Siedlce, Biała Podlaska, Chełm, Zamość, Przemyśl, Tarnów, Nowy Sącz,
+               Kraśnik, Mińsk Mazowiecki, Wałbrzych, Legnica, Głogów, Świdnica, Gniezno, Leszno, Kalisz,
+               Konin, Grudziądz, Inowrocław, Łódź, Pruszków, Piotrków Trybunalski, Skierniewice, Łowicz,
+               Sieradz, Zgierz, Pabianice, Bełchatów, Suwałki, Ełk, Giżycko, Świnoujście, Gdynia, Sopot,
+               Szczecin, Olsztyn, Lublin, Opole, Katowice, Bydgoszcz, Radom, Sosnowiec, Warszawa]
   # nagłówki sekcji stron (początek linii, WIELKOŚĆ LITER ISTOTNA: „zamawiających:” z zawiniętego
   # pod-nagłówka ani „działający przez…” nie są nagłówkami)
   section_headers:
-    odwolujacy: '^Odwołując\w*(?:\s*\(.*?\))?\s*:?'
-    zamawiajacy: '^Zamawiając\w*(?:\s*\(.*?\))?\s*:?'
+    # odporne na typowe zniekształcenia OCR: „Odwolujący”, „Odwołujacy”, „Odwohujacy”, szum przed etykietą
+    odwolujacy: '^\W{0,3}(?:[a-z]{0,12})?Odwo[łlh]uj[ąa]c\w*(?:\s*\(.*?\))?\s*:?'
+    zamawiajacy: '^\W{0,3}(?:[a-z]{0,12})?Zamawia[ji][ąa]c\w*(?:\s*\(.*?\))?\s*:?'
     inne: '^(?:Prezes Krajowej Izby|Krajowa Izba Odwo|Wykonawca wybrany|Przystępując\w*|Uczestni\w*|[Dd]otyczy|O\s?D\s?W\s?O\s?[ŁL]\s?A\s?N\s?I\s?E|Działając|Wartość zamówienia|Wpis od)'
   # linie, które nie są nazwą podmiotu (adres, identyfikatory, kontakt)
   # (także każda linia z kodem pocztowym, np. „Rynek 1, 45-015 Opolec” – adres bez „ul.”)
-  non_name_line: '^(?:ul\.|al\.|pl\.|os\.|aleja|\d{2}-\d{3}|KRS|NIP|REGON|tel\.|e-mail|adres|reprezentowan|przedsiębiorca|prowadząc|wpisan|działając|[\w.+-]+@)|.*,\s*\d{2}-\d{3}\s+\S'
+  non_name_line: '^\W{0,2}(?:ul\.|al\.|pl\.|os\.|aleja|\d{2}-\d{3}|KRS|NIP|REGON|tel\.|e-mail|adres|reprezentowan|przedsiębiorca|prowadząc|wpisan|działając|[\w.+-]+@)|.*,\s*\d{2}-\d{3}\s+\S'
   # pod-nagłówki podmiotów w sekcji (konsorcjum, zamawiający wspólni)
   # pod-nagłówek „N) …:”; może być zawinięty na 2 linie (druga linia zaczyna się małą literą)
   entity_subheader: '^\d+\)\s*.*:\s*$'
@@ -95,12 +106,14 @@ fields:
     patterns:
       - '\bpn\.\s*:?\s*[„"](?P<v>(?:[^„”"]|„[^„”"]*”){5,400})[”"]'
       - 'pod nazwą\s*:?\s*[„"](?P<v>(?:[^„”"]|„[^„”"]*”){5,400})[”"]'
-      - 'dotyczy\W+(?:\w+\W+){0,12}?[„"](?P<v>(?:[^„”"]|„[^„”"]*”){5,400})[”"]'
 
 # Model językowy dla zaskarżonej czynności (ustawienia połączenia: config/llm.yaml).
 # mode: off | fallback (LLM tylko gdy reguły nie znalazły zdania z czynnością) | always
 llm:
   mode: fallback
+  # w trybie fallback reguła rozstrzyga tylko dla tych poziomów action_triggers (0 = „Zamawiający w dniu …”);
+  # pozostałe (petitum, synonimy, brak wyzwalacza) rozstrzyga model
+  trust_rule_tiers: [0]
   max_chars: 8000
   system_prompt: |
     Jesteś ekspertem od prawa zamówień publicznych (ustawa Pzp). Analizujesz odwołania do Krajowej
@@ -115,7 +128,8 @@ llm:
     {classes}
 
     Zwróć JSON:
-    {{"czynnosc_powod_id": <id z listy albo null>,
+    {{"czynnosc_powod_id": <numer kategorii z listy (liczba przed dwukropkiem) albo null>,
+      "czynnosc_opis": "<opis tej kategorii skopiowany dokładnie z listy>",
       "czynnosc_dzien": "<data tej czynności w formacie RRRR-MM-DD albo null>",
       "cytat": "<DOSŁOWNIE skopiowany fragment tekstu (bez zmian i skrótów), na którym opierasz decyzję, razem z datą>"}}
 
@@ -127,3 +141,47 @@ llm:
     """
     {text}
     """
+
+# Pola uzupełniane przez model, gdy ścisłe reguły nic nie znalazły (patrz odwolania2json/llm_fill.py).
+llm_fill:
+  fields:
+    odwolujacy_nip: {path: "Odwolujacy[0].nip", type: nip, opis: "NIP odwołującego (przy konsorcjum – lidera), nie kancelarii"}
+    odwolujacy_krs: {path: "Odwolujacy[0].krs", type: krs, opis: "KRS odwołującego (przy konsorcjum – lidera), nie kancelarii; null jeśli brak", only_if_null: ["Odwolujacy[0].nip"]}
+    odwolujacy_regon: {path: "Odwolujacy[0].regon", type: regon, opis: "REGON odwołującego (przy konsorcjum – lidera); null jeśli brak", only_if_null: ["Odwolujacy[0].nip"]}
+    odwolujacy_nazwa:
+      path: "Odwolujacy[0].nazwa"
+      type: text
+      opis: "pełna nazwa odwołującego (wykonawcy wnoszącego odwołanie); przy konsorcjum – nazwa lidera; bez adresu i dopisków"
+    zamawiajacy_nazwa:
+      not_equal: "Odwolujacy[0].nazwa"
+      path: "Zamawiajacy[*].nazwa"
+      type: text
+      opis: "pełna nazwa tego zamawiającego (bez adresu i dopisków)"
+      context: "nip"
+    przez_pelnomocnika:
+      path: "Odwolujacy[0].przez-pelnomocnika"
+      type: flag01
+      opis: "1 jeśli odwołującego reprezentuje pełnomocnik (adwokat / radca prawny), 0 jeśli działa sam lub przez członków zarządu"
+    pelnomocnik_osoba:
+      path: "Odwolujacy[0].pelnomocnik.imie_nazwisko"
+      type: person
+      opis: "imię i nazwisko PIERWSZEGO pełnomocnika odwołującego (adwokata / radcy prawnego), w mianowniku; null jeśli brak pełnomocnika"
+      skip_if: {"Odwolujacy[0].przez-pelnomocnika": 0}
+    pelnomocnik_kancelaria:
+      path: "Odwolujacy[0].pelnomocnik.nazwa"
+      type: text
+      opis: "nazwa kancelarii / podmiotu, w którym pracuje pełnomocnik odwołującego"
+      skip_if: {"Odwolujacy[0].przez-pelnomocnika": 0}
+    pelnomocnik_mail:
+      path: "Odwolujacy[0].pelnomocnik.mail"
+      type: email
+      opis: "adres e-mail pełnomocnika odwołującego"
+      skip_if: {"Odwolujacy[0].przez-pelnomocnika": 0}
+    tytul_zamowienia:
+      path: ZamowieniePubliczne.tytul
+      type: text
+      opis: "tytuł (nazwa) zamówienia publicznego, którego dotyczy odwołanie, bez cudzysłowów"
+    numer_postepowania:
+      path: ZamowieniePubliczne.numer_postepowania
+      type: code
+      opis: "numer referencyjny / znak sprawy postępowania nadany przez zamawiającego (np. ZP.271.5.2026)"

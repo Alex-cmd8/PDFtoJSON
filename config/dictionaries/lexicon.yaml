@@ -8,9 +8,9 @@ legal_forms:
   - 'sp[óo][łl]ka jawna'
   - 'sp[óo][łl]ka komandytowa'
   - 'sp[óo][łl]ka cywilna'
-  - 'sp\.\s?z\s?o\.\s?o\.'
-  - 'sp\.\s?j\.'
-  - 'sp\.\s?k\.'
+  - 'sp\.\s?z\s?o\.\s?o\.?'
+  - 'sp\.\s?j\.?'
+  - 'sp\.\s?k\.?'
   - 'sp\.\s?p\.'
   - 'S\.\s?A\.?'
   - 'S\.\s?K\.\s?A\.'
@@ -24,8 +24,8 @@ attorney_titles:
   - 'r\.\s?pr\.'
   - 'radc(?:a|y|ę|zyni) prawn(?:y|ego|ą|a)'
   - 'apl\.\s?radc\.'
+  - 'apl\.\s?r\.\s?pr\.'
   - 'mec\.'
-  - 'Pan(?:a|i|em)?'
 
 # słowa, na których kończy się „cofanie” przy szukaniu początku nazwy
 name_start_stopwords:

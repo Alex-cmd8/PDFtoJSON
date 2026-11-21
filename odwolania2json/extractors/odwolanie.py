@@ -5,7 +5,7 @@ import re
 
 from ..engine import Engine
 from ..normalize import DATE_RX, norm_date
-from .common import Lexicon, PERSON_RX, flat, ids_in
+from .common import Lexicon, PERSON_RX, flat, ids_in, fix_legal_form
 
 EMAIL_RX = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 
@@ -14,12 +14,21 @@ EMAIL_RX = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 def _sections(lines: list[str], opts: dict) -> list[tuple[str, str, list[str]]]:
     """Dzieli początek pisma na sekcje (typ, linia nagłówka, linie treści)."""
     hdr = {k: re.compile(v) for k, v in opts["section_headers"].items()}
+    non_name = re.compile(opts["non_name_line"], re.I)
     out: list[tuple[str, str, list[str]]] = []
     cur = None
     for ln in lines:
         kind = next((k for k, rx in hdr.items() if rx.match(ln)), None)
         if kind:
             cur = (kind, ln, [])
+            # skan: etykieta stoi w lewej kolumnie na wysokości środka bloku, więc pierwsza linia nazwy
+            # bywa NAD nią. Bierzemy ją tylko, gdy etykieta jest pusta, a linia wyżej nie jest adresem,
+            # identyfikatorem ani częścią innego bloku z etykietą.
+            inline = re.sub(r"^[^:]*:?", "", ln, count=1).strip(" |'")
+            if (kind in ("odwolujacy", "zamawiajacy") and not inline and out and out[-1][2]
+                    and out[-1][0] == "inne" and not non_name.match(out[-1][2][-1])
+                    and not re.search(r"\d{2}-\d{3}|Warszawa|Postępu", out[-1][2][-1])):
+                cur[2].append(out[-1][2].pop())
             out.append(cur)
             if kind == "inne" and re.match(r"(?:O\s?D\s?W|Działając)", ln):
                 break
@@ -82,24 +91,32 @@ def _is_continuation(prev: str, ln: str) -> bool:
 
 
 # --------------------------------------------------------------------- pełnomocnik
-def _attorney(ent_text: str, lex: Lexicon) -> dict:
-    m = re.search(r"reprezentowan\w*\s+przez\s*:?\s*(.*?)(?=adres do korespondencji|tel\.|e-mail|$)", ent_text, re.I)
+def _attorney(ent_text: str, lex: Lexicon, opts: dict) -> dict:
+    """Pełnomocnik odwołującego – reguła ŚCISŁA, tylko w bloku odwołującego.
+
+    Działa wyłącznie, gdy bezpośrednio po „reprezentowany przez” (opcjonalnie „pełnomocnika:”) stoi tytuł
+    zawodowy (adw., r. pr., radca prawny…). Inaczej (np. „przez Prezesa Zarządu”) nic nie zgaduje:
+    pola zostają None i rozstrzyga model językowy. „0” tylko przy jawnej formule braku pełnomocnika.
+    """
+    none = {"przez": None, "imie_nazwisko": None, "nazwa": None, "mail": None}
+    # OCR: „reprezentowanv”, „pizez”, „pelnomocnika”, podkreślenia zamiast spacji
+    m = re.search(r"reprezentowan\w*[\s_]+p\w?zez[\s_]*(?:pe[łl]nomocnik\w*)?\s*:?\s*", ent_text, re.I)
     if not m:
-        return {"przez": 0, "imie_nazwisko": None, "nazwa": None, "mail": None}
-    rep = m.group(1)
-    found = lex.attorneys(rep)
-    if found:
-        person = found[0][1]
-    else:
-        pm = re.search(PERSON_RX, rep)
-        person = pm.group("person") if pm else None
-    nazwa = None
-    # „korespondencji” bywa zniekształcone przez OCR („korespondencii”); adres może być w nowej linii bez przecinka
-    if am := re.search(r"adres do korespondencj?i+\s*:?\s*(.+?)(?:,?\s+(?:ul\.|al\.|pl\.|os\.)|,\s*\d{2}-\d{3}|$)", ent_text, re.I):
-        nazwa = am.group(1).strip(" ,")
-    tail = ent_text[m.start():]
-    em = EMAIL_RX.search(tail)
-    return {"przez": 1, "imie_nazwisko": person, "nazwa": nazwa, "mail": em.group(0) if em else None}
+        if re.search(opts.get("no_attorney_rx", r"bez\s+(?:ustanawiania\s+)?pełnomocnika"), ent_text, re.I):
+            return {**none, "przez": 0}
+        return none
+    rest = ent_text[m.end():]
+    first = lex.attorney_rx.match(rest)  # tytuł musi być PIERWSZY po frazie
+    if not first:
+        return none
+    out = {"przez": 1, "imie_nazwisko": first.group("person"), "nazwa": None, "mail": None}
+    # kancelaria: wyłącznie po etykiecie „adres do korespondencji:” (OCR: „korespondencii”)
+    if am := re.search(r"adres do korespondencj?i+\s*:?\s*(.+?)(?:,?\s+(?:ul\.|al\.|pl\.|os\.)|,\s*\d{2}-\d{3}|$)",
+                       rest, re.I):
+        out["nazwa"] = am.group(1).strip(" ,")
+    if em := EMAIL_RX.search(rest):
+        out["mail"] = em.group(0)
+    return out
 
 
 def _linearize_tables(doc_lines, cfg: dict | None) -> list[str]:
@@ -193,14 +210,15 @@ def _petitum_date(sentence: str) -> str | None:
 
 
 def _action(text: str, opts: dict, dictionary: list[dict], trace: dict) -> tuple[str | None, int | None, str | None]:
-    for tier in opts["action_triggers"]:
+    for tier_no, tier in enumerate(opts["action_triggers"]):
         if isinstance(tier, dict) and tier.get("mode") == "petitum":
             for p in tier["patterns"]:
                 for m in re.finditer(p, text, re.I):
                     sentence = _sentence_after(text, m.end(), need_date=True)
                     item = _classify_earliest(sentence, dictionary)
                     if item:
-                        trace["czynnosc"] = {"regula": "wyzwalacz: petitum", "zdanie": (m.group(0) + sentence)[:300],
+                        trace["czynnosc"] = {"regula": "wyzwalacz: petitum", "poziom": tier_no,
+                                             "zdanie": (m.group(0) + sentence)[:300],
                                              "id": item["id"]}
                         return _petitum_date(sentence), item["id"], item["opis"]
             continue
@@ -213,7 +231,7 @@ def _action(text: str, opts: dict, dictionary: list[dict], trace: dict) -> tuple
             sentence = rest[: end.start() if end else 300]
             for item in dictionary:
                 if any(re.search(p, sentence, re.I) for p in item["patterns"]):
-                    trace["czynnosc"] = {"regula": f"wyzwalacz: {m.re.pattern[:60]}",
+                    trace["czynnosc"] = {"regula": f"wyzwalacz: {m.re.pattern[:60]}", "poziom": tier_no,
                                          "zdanie": (m.group(0) + sentence)[:300], "id": item["id"]}
                     return norm_date(m.group("v")), item["id"], item["opis"]
     # zapasowo: pierwszy zarzut + pierwsza data „w dniu/z dnia” – to ZGADYWANIE, domyślnie wyłączone
@@ -260,6 +278,10 @@ def _normalize_answer(ans: dict) -> dict:
     return out
 
 
+def _norm_opis(t) -> str:
+    return re.sub(r"[^a-ząćęłńóśźż0-9]+", " ", str(t or "").lower()).strip()
+
+
 def _date_near_quote(text: str, quote: str | None) -> str | None:
     """Pierwsza data (nie data ustawy) w zdaniu tekstu, które zawiera cytat podany przez model."""
     if not quote:
@@ -285,12 +307,15 @@ def _action_llm_step(text, rule_result, doc_type, cfg, dictionary, trace):
     """
     lcfg = doc_type.raw.get("llm", {})
     mode = cfg.settings.get("llm", {}).get("mode_override") or lcfg.get("mode", "off")
-    rule_ok = trace.get("czynnosc", {}).get("regula", "").startswith("wyzwalacz")
+    # reguła rozstrzyga tylko, gdy zadziałał ŚCISŁY wyzwalacz (poziomy z `trust_rule_tiers`, domyślnie 0:
+    # „Zamawiający w dniu <data> <czynność>”); luźniejsze wzorce (petitum, synonimy) idą do modelu
+    trusted = set(lcfg.get("trust_rule_tiers", [0]))
+    rule_ok = trace.get("czynnosc", {}).get("poziom") in trusted
     if mode == "off" or (mode == "fallback" and rule_ok):
         return rule_result
     client = _llm_client(cfg)
     classes = "\n".join(f"{c['id']}: {c['opis']}" + (f" — {c['llm_hint']}" if c.get("llm_hint") else "")
-                        for c in dictionary)
+                        for c in sorted(dictionary, key=lambda c: c["id"]))  # pozycja na liście = id
     user = lcfg["user_prompt"].format(classes=classes, text=text[: lcfg.get("max_chars", 8000)])
     ans = client.chat_json(lcfg["system_prompt"], user)
     info = {"tryb": mode, "odpowiedz": ans}
@@ -304,6 +329,12 @@ def _action_llm_step(text, rule_result, doc_type, cfg, dictionary, trace):
         pid = int(ans.get("czynnosc_powod_id")) if ans.get("czynnosc_powod_id") is not None else None
     except (TypeError, ValueError):
         pid = None
+    # opis klasy jest trudniejszy do pomylenia niż numer – przy rozbieżności rozstrzyga opis
+    opis_ans = _norm_opis(ans.get("czynnosc_opis"))
+    by_opis = {_norm_opis(c["opis"]): c["id"] for c in dictionary}
+    if opis_ans in by_opis and by_opis[opis_ans] != pid:
+        info["id_z_opisu"] = {"id_modelu": pid, "id_z_opisu": by_opis[opis_ans]}
+        pid = by_opis[opis_ans]
     if pid not in by_id:
         info["wynik"] = f"id {pid!r} spoza słownika – zostaje reguła"
         return rule_result
@@ -325,14 +356,14 @@ def _action_llm_step(text, rule_result, doc_type, cfg, dictionary, trace):
 
 def _header(doc, opts: dict) -> tuple[str | None, str | None]:
     """Linia „Miejscowość, dnia DD.MM.RRRR” na pierwszej stronie (cała komórka = miejscowość + data)."""
-    rx = re.compile(rf"^\s*(?P<city>[A-ZĄĆĘŁŃÓŚŹŻ][\w\- ]{{1,40}}?),?\s+(?:dnia\s+)?{DATE_RX}"
+    rx = re.compile(rf"^\s*(?P<city>(?-i:[A-ZĄĆĘŁŃÓŚŹŻ])[\w\- ]{{1,40}}?),?\s+(?:dnia\s+)?{DATE_RX}"
                     r"\s*(?:r\.|roku)?\s*\.?\s*$", re.I)
     for line in doc.lines:
         if line.page > opts.get("header_max_page", 0):
             break
         for cell in line.cells:
             if m := rx.match(cell.text):
-                return m.group("city").strip(), norm_date(m.group("v"))
+                return _city(m.group("city").strip(), opts), norm_date(m.group("v"))
     return None, None
 
 
@@ -344,8 +375,31 @@ def _header_zone(text: str, opts: dict) -> str:
     return text[s: s + 10 + end.start()] if end else text[s: s + 3000]
 
 
+def _city(city: str, opts: dict) -> str:
+    """OCR gubi znaki diakrytyczne w nazwie miasta („Łódz”) – przywracamy formę ze słownika miast."""
+    from ..llm_fill import _plain
+    key = _plain(city)
+    return next((c for c in opts.get("city_names", []) if _plain(c) == key), city)
+
+
+def _clean_party_name(name: str) -> str | None:
+    """Nazwa strony z bloku: zdejmuje numer pozycji i dopisek roli; odrzuca linie, które nie są samą nazwą."""
+    n = re.sub(r"^\s*\d+\)\s*", "", name).strip()
+    n = re.sub(r"\s*\((?:Lider|Partner|Członek|Uczestnik)[^)]*\)\s*$", "", n, flags=re.I).strip()
+    if m := re.search(r"\bpod firm[ąa]\s+(.+)$", n):  # „Jan Nowak, prowadzący działalność pod firmą X”
+        n = m.group(1).strip(" ,")
+    # dwukropek, wyliczenie, opis roli w środku = to nie jest czysta nazwa → nie zgadujemy
+    if not n or ":" in n or re.search(r"\d\)|wspólnie|udzielaj|prowadząc\w* działalność", n, re.I):
+        return None
+    # nazwa to co najmniej jedno słowo z liter (odrzuca szum OCR: „'”, „| -”)
+    if not re.search(r"[^\W\d_]{3,}", n):
+        return None
+    return fix_legal_form(n)
+
+
 def _party(ent: dict, extra: dict) -> dict:
-    return {"krs": ent["ids"]["krs"], "nazwa": ent["name"], "nip": ent["ids"]["nip"], "regon": ent["ids"]["regon"], **extra}
+    return {"krs": ent["ids"]["krs"], "nazwa": _clean_party_name(ent["name"]), "nip": ent["ids"]["nip"],
+            "regon": ent["ids"]["regon"], **extra}
 
 
 def extract(doc, doc_type, cfg):
@@ -372,7 +426,7 @@ def extract(doc, doc_type, cfg):
         if ents:
             lead = next((e for e in ents if e["sub"] and leader_rx.search(e["sub"])), ents[0])
             section_text = flat(" ".join(body))
-            att = _attorney(section_text, lex)
+            att = _attorney(section_text, lex, opts)
             odwolujacy.append(_party(lead, {
                 "przez-pelnomocnika": att["przez"],
                 "pelnomocnik": {"imie_nazwisko": att["imie_nazwisko"], "nazwa": att["nazwa"], "mail": att["mail"]},
@@ -396,6 +450,13 @@ def extract(doc, doc_type, cfg):
     for k, h in hits.items():
         trace[k] = h.trace()
 
+    # blok strony nieodczytany (np. skan) → pusty szkielet; pola uzupełni model z walidacją w tekście.
+    # Odwołanie zawsze ma jednego odwołującego i co najmniej jednego zamawiającego.
+    if not odwolujacy:
+        odwolujacy = [{"krs": None, "nazwa": None, "nip": None, "regon": None, "przez-pelnomocnika": None,
+                       "pelnomocnik": {"imie_nazwisko": None, "nazwa": None, "mail": None}}]
+    if not zamawiajacy:
+        zamawiajacy = [{"krs": None, "nazwa": None, "nip": None, "regon": None, "prowadzacy_postepowanie": None}]
     result = {
         "OdwolanieKIO": {
             "data": date,

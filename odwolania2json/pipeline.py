@@ -25,7 +25,26 @@ def process_pdf(pdf: Path, cfg: Config) -> tuple[dict, dict]:
     dt = cfg.doc_types[doc_type]
     result, field_trace = get_extractor(dt.extractor)(doc, dt, cfg)
     trace["fields"] = field_trace
+    # pola puste po ścisłych regułach → model językowy (tylko z oparciem w tekście)
+    from .llm_fill import fill
+    result = fill(result, doc, dt, cfg, trace)
+    if getattr(doc, "ocr_pages", 0):
+        result = _ocr_corrections(result, dt.raw.get("ocr_corrections") or [], trace)
     return result, trace
+
+
+def _ocr_corrections(result: dict, rules: list, trace: dict) -> dict:
+    """Poprawki znanych zniekształceń OCR (konfiguracja `ocr_corrections` w YAML typu)."""
+    from .llm_fill import _get, _set
+    for r in rules:
+        v = _get(result, r["path"])
+        if r["kind"] == "leading_minus_as_2" and isinstance(v, (int, float)):
+            known = {float(k) for k in r["known"]}
+            s = f"{v:.2f}"
+            if v not in known and s.startswith("2") and len(s) > 4 and float(s[1:]) in known:
+                _set(result, r["path"], float(s[1:]))
+                trace.setdefault("ocr_corrections", []).append({r["path"]: [v, float(s[1:])]})
+    return result
 
 
 def _write_json(path: Path, data) -> None:

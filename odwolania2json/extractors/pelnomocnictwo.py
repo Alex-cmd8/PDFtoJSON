@@ -30,11 +30,12 @@ def _mocodawcy(text: str, lex: Lexicon, cfg: dict, trace: dict) -> list[dict]:
         nxt = cands[i + 1][0] if i + 1 < len(cands) else len(zone)
         seg = zone[e:nxt][:400]
         ids = ids_in(seg)
-        if any(ids[k] for k in ("krs", "nip", "regon")) or not ents and i == len(cands) - 1:
-            ents.append({"name": name, "ids": ids, "start": s, "how": how, "seg": seg})
-    if not ents and cands:
-        s, e, name, how = cands[0]
-        ents.append({"name": name, "ids": ids_in(zone[e:e + 400]), "start": s, "how": how, "seg": ""})
+        # ŚCISŁO: mocodawca = nazwa, po której (przed kolejnym kandydatem) stoją jej identyfikatory;
+        # bez tego nic nie zgadujemy – rozstrzygnie model językowy
+        if re.search(cfg.get("not_principal_rx", r"^\s*(?:kancelaria|adwokac|radc)"), name, re.I):
+            continue  # papier firmowy kancelarii pełnomocnika – to nie mocodawca
+        if any(ids[k] for k in ("krs", "nip", "regon")):
+            ents.append({"name": name, "ids": ids, "start": s, "end": e, "how": how, "seg": seg})
     # „pod firmą” ma pierwszeństwo przed nazwą tej samej osoby wykrytą inaczej
     out, seen = [], set()
     for ent in ents:
@@ -42,17 +43,19 @@ def _mocodawcy(text: str, lex: Lexicon, cfg: dict, trace: dict) -> list[dict]:
         if key in seen:
             continue
         seen.add(key)
-        natural = ent["how"] in ("pod_firma", "wyliczenie") or (
-            not ent["ids"]["krs"] and re.search(cfg["natural_person_rx"], zone, re.I))
+        # typ: z WŁASNEGO fragmentu mocodawcy (nie z całej strefy – w konsorcjum są różne typy)
+        local = zone[max(0, ent["start"] - 250): ent["end"] + len(ent["seg"])]
+        natural = (ent["how"] in ("pod_firma", "wyliczenie") and not ent["ids"]["krs"]) or (
+            ent["how"] != "forma_prawna" and not ent["ids"]["krs"]
+            and re.search(cfg["natural_person_rx"], local, re.I))
         person = None
-        if natural and ent["how"] == "wyliczenie":
-            # firma przedsiębiorcy zawiera jego imię i nazwisko (art. 43⁴ KC) – zwykle na końcu
-            person = " ".join(ent["name"].split()[-2:])
-        elif natural:
-            m = re.search(r"niżej podpisan\w*\s+" + PERSON_RX, zone) or re.search(PERSON_RX + r"\s*,?\s*prowadząc\w* działalność", zone)
+        if natural:
+            # imię i nazwisko tylko z jawnej formuły tuż przy mocodawcy; inaczej None (model językowy)
+            near = zone[max(0, ent["start"] - 250): ent["end"] + 60]
+            m = (re.search(r"niżej podpisan\w*\s*,?\s+" + PERSON_RX, near)
+                 or re.search(r"(?:^|[\s,(])Ja\s*,\s*" + PERSON_RX, near)
+                 or re.search(PERSON_RX + r"\s*,?\s*prowadząc\w* działalność", near))
             person = m.group("person") if m else None
-            if not person:  # ostatnie dwa słowa nazwy firmy
-                person = " ".join(ent["name"].split()[-2:])
         out.append({
             "data": {
                 "imie_nazwisko": person if natural else None,
@@ -67,19 +70,58 @@ def _mocodawcy(text: str, lex: Lexicon, cfg: dict, trace: dict) -> list[dict]:
     return out
 
 
-def _pelnomocnicy(text: str, lex: Lexicon, trace: dict) -> list[dict]:
-    found = lex.attorneys(text)
-    # PESEL przypisujemy do najbliższego wcześniejszego pełnomocnika
-    pesels = [(m.start(), re.sub(r"\D", "", m.group(1))) for m in IDS["pesel"].finditer(text)]
-    names = dedupe([n for _, n in found])
+def _grant_zones(text: str, cfg: dict) -> list[tuple[int, int]]:
+    """Fragmenty ustanawiające pełnomocników: od frazy udzielenia do pierwszego znacznika końca."""
+    zones = []
+    for p in cfg["grant_phrases_attorney"]:
+        for m in re.finditer(p, text, re.I):
+            tail = text[m.start():m.start() + 1200]
+            ends = [e.start() for q in cfg["grant_end"] if (e := re.search(q, tail[len(m.group(0)):], re.I))]
+            zones.append((m.start(), m.start() + len(m.group(0)) + (min(ends) if ends else 600)))
+    return zones
+
+
+def _label_block_text(doc, cfg: dict) -> str:
+    """Kolumna/wiersz z etykietą „Pełnomocnik / Pełnomocnicy” (układy tabelaryczne)."""
+    rx = re.compile(cfg["attorney_label"], re.I)
+    stop = re.compile(cfg["attorney_label_stop"], re.I)
+    parts = []
+    lines = doc.lines
+    for i, line in enumerate(lines):
+        for ci, cell in enumerate(line.cells):
+            if not rx.fullmatch(cell.text.strip()):
+                continue
+            parts.extend(c.text for c in line.cells[ci + 1:])
+            for j in range(i + 1, min(i + 6, len(lines))):
+                nxt = lines[j]
+                if stop.match(nxt.cells[0].text):
+                    break
+                parts.extend(c.text for c in nxt.cells if c.x1 >= cell.x0 - 4)
+    return " ".join(parts)
+
+
+def _pelnomocnicy(doc, text: str, lex: Lexicon, cfg: dict, trace: dict) -> list[dict]:
+    zones = _grant_zones(text, cfg)
+    sources = [text[a:b] for a, b in zones]
+    sources.append(_label_block_text(doc, cfg))
+    if m := re.search(cfg["accept_phrase"], text, re.I):  # blok podpisów „Pełnomocnictwo przyjmuję”
+        sources.append(text[m.end():])
+    found = [(i, pos, n) for i, src in enumerate(sources) for pos, n in lex.attorneys(src)]
+    names = dedupe([n for _, _, n in found])
     out = []
     for n in names:
-        pos = next(p for p, x in found if x == n)
-        # PESEL należy do najbliższego pełnomocnika PRZED nim (nie do pierwszego w promieniu 200 znaków)
-        pesel = next((v for p, v in pesels if 0 < p - pos < 200
-                      and max((q for q, _ in found if q < p), default=-1) == pos), None)
-        out.append({"imie_nazwisko": n, "pesel": pesel})  # tekst – jak w danych referencyjnych (i bez utraty wiodącego zera)
-    trace["pelnomocnicy"] = {"regula": "tytuł zawodowy + imię i nazwisko", "znalezione": names}
+        si, pos, _ = next(f for f in found if f[2] == n)
+        src = sources[si]
+        # PESEL: w tym samym fragmencie, najbliższy pełnomocnik przed numerem
+        pesel = None
+        for pm in IDS["pesel"].finditer(src):
+            owner = max((q for q, _ in lex.attorneys(src) if q < pm.start()), default=None)
+            if owner == pos and pm.start() - pos < 200:
+                pesel = re.sub(r"\D", "", pm.group(1))
+                break
+        out.append({"imie_nazwisko": n, "pesel": pesel})  # tekst – jak w danych referencyjnych
+    trace["pelnomocnicy"] = {"regula": "tytuł zawodowy w strefie ustanowienia / bloku „Pełnomocnik” / podpisach",
+                             "strefy": [text[a:b][:120] for a, b in zones], "znalezione": names}
     return out
 
 
@@ -148,7 +190,7 @@ def extract(doc, doc_type, cfg):
     text = flat(doc.text)
     trace: dict = {}
     mocodawcy = _mocodawcy(text, lex, opts, trace)
-    pelnomocnicy = _pelnomocnicy(text, lex, trace)
+    pelnomocnicy = _pelnomocnicy(doc, text, lex, opts, trace)
     attorneys = {p["imie_nazwisko"] for p in pelnomocnicy}
     sigs = _signatories(doc, lex, attorneys, mocodawcy, opts)
     for head, person in sigs:
@@ -159,4 +201,10 @@ def extract(doc, doc_type, cfg):
         if target is not None and person not in [p["imie_nazwisko"] for p in target["podpisujacy"]]:
             target["podpisujacy"].append({"imie_nazwisko": person})
     trace["podpisujacy"] = [{"naglowek": h, "osoba": p} for h, p in sigs]
+    # mocodawca nieodczytany (np. skan z pomieszanymi kolumnami) → pusty szkielet; pola uzupełni
+    # model z walidacją w tekście. Pełnomocnictwo zawsze ma co najmniej jednego mocodawcę.
+    if not mocodawcy:
+        mocodawcy = [{"data": {"imie_nazwisko": None, "krs": None, "nazwa": None, "nip": None, "typ": None},
+                      "podpisujacy": []}]
+        trace["mocodawca_szkielet"] = True
     return {"mocodawca": mocodawcy, "pelnomocnicy": pelnomocnicy}, trace

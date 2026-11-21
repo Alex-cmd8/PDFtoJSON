@@ -21,3 +21,45 @@ cache_dir: .llm_cache
 #   OVHcloud AI Endpoints: base_url https://oai.endpoints.kepler.ai.cloud.ovh.net/v1,
 #                          model Qwen3.5-9B / gpt-oss-20b, api_key_env OVHCLOUD_API_KEY
 #   Scaleway:              base_url https://api.scaleway.ai/v1, api_key_env SCW_SECRET_KEY
+
+# Uzupełnianie pól, których ścisłe reguły nie ustaliły (odwolania2json/llm_fill.py).
+fill_system_prompt: |
+  Jesteś asystentem wyciągającym dane z polskich dokumentów postępowania odwoławczego przed KIO
+  (odwołanie, pełnomocnictwo, potwierdzenie przelewu). Odpowiadasz wyłącznie obiektem JSON.
+fill_user_prompt: |
+  Na podstawie dokumentu podaj wartości poniższych pól. Zasady:
+  - przepisuj wartości dokładnie z dokumentu (numery rachunków, NIP, adresy e-mail, nazwy);
+  - imiona i nazwiska podawaj w mianowniku (np. „Jan Kowalski”, nie „Jana Kowalskiego”);
+  - jeśli dokument nie zawiera informacji – wpisz null; nie zgaduj.
+
+  Pola (klucz: opis):
+  {fields}
+
+  Zwróć JSON z dokładnie tymi kluczami.
+
+  Dokument:
+  """
+  {text}
+  """
+
+# Klasyfikacja w „szarej strefie” (odwolania2json/classify.py): reguły znalazły część cech typu,
+# ale za mało (zwykle skan zniekształcony przez OCR). Poniżej tego progu – pusty JSON bez modelu.
+classify_min_score: 2
+classify_max_chars: 3000
+classify_system_prompt: |
+  Rozpoznajesz rodzaj polskich dokumentów składanych w postępowaniu odwoławczym przed KIO.
+  Tekst może pochodzić z OCR i zawierać błędy. Odpowiadasz wyłącznie obiektem JSON.
+classify_user_prompt: |
+  Jakiego rodzaju jest poniższy dokument? Możliwe odpowiedzi:
+  {types}
+  - inny: każdy inny dokument – np. orzeczenie lub postanowienie KIO, wyrok, decyzja administracyjna,
+    ogłoszenie o zamówieniu (BZP/TED), pismo urzędu, poradnik, faktura, broszura.
+  Wydruk z banku (szczegóły transakcji, historia, potwierdzenie) to potwierdzenie przelewu także wtedy,
+  gdy tytuł przelewu dotyczy odwołania (np. „wpis od odwołania”).
+
+  Zwróć JSON: {{"typ": "<nazwa z listy albo inny>", "uzasadnienie": "<krótko>"}}
+
+  Dokument (początek):
+  """
+  {text}
+  """

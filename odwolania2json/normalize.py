@@ -16,14 +16,14 @@ _MON_RX = "|".join(MONTHS)
 
 DATE_RX = (
     rf"(?P<v>(?:\d{{1,2}}\s+(?:{_MON_RX})\s+\d{{4}})"
-    r"|(?:\d{4}-\d{2}-\d{2})"
+    r"|(?:\d{4}[-.]\d{2}[-.]\d{2})"
     r"|(?:\d{1,2}[./-]\d{1,2}[./-]\d{4}))"
 )
 
 
 def norm_date(s: str) -> str | None:
     s = s.strip().lower()
-    if m := re.fullmatch(r"(\d{4})-(\d{2})-(\d{2})", s):
+    if m := re.fullmatch(r"(\d{4})[-.](\d{2})[-.](\d{2})", s):
         y, mo, d = map(int, m.groups())
     elif m := re.fullmatch(r"(\d{1,2})[./-](\d{1,2})[./-](\d{4})", s):
         d, mo, y = map(int, m.groups())
@@ -37,11 +37,11 @@ def norm_date(s: str) -> str | None:
 
 
 # kwota z separatorem tysięcy (z groszami lub bez: „15 000 zł”, „2.500 PLN”) albo zwykła liczba
-AMOUNT_RX = r"(?P<v>\d{1,3}(?:[  .]\d{3})+(?:,\d{2})?|\d{1,3}(?:[  ]\d{3})*(?:[.,]\d{2})|\d+(?:[.,]\d{2})?)(?=\s*(?:PLN|zł|zl|$|\s|\.|,|\)))"
+AMOUNT_RX = r"(?<![\dA-Za-z])(?<!\d[.,/-])(?<!\d[.]\d\d[  ])(?P<v>\d{1,3}(?:[  ]\d{3})*,[  ]\d{2}(?=\s*(?:PLN|zł|zl))|\d{1,3}(?:[  .]\d{3})+(?:,\d{2})?|\d{1,3}(?:[  ]\d{3})*(?:[.,]\d{2})|\d{1,9}(?:[.,]\d{2})?)(?![.,/-]\d)(?![  ]\d{4}(?!\d))(?=\s*(?:PLN|zł|zl|$|\s|\.|,|\)))"
 
 
 def norm_amount(s: str) -> float | None:
-    s = s.replace(" ", " ").strip()
+    s = re.sub(r",\s+(\d{2})$", r",\1", s.replace(" ", " ").strip())
     if m := re.fullmatch(r"(\d{1,3}(?:[ .]\d{3})*)(?:[.,](\d{2}))?", s):
         whole = re.sub(r"[ .]", "", m.group(1))
         return float(f"{whole}.{m.group(2) or '00'}")
@@ -90,6 +90,7 @@ def norm_text(s: str) -> str | None:
     s = re.sub(r"\s+", " ", s).strip()
     # przeniesienie wyrazu na końcu linii: „wdro- żeniem” → „wdrożeniem” (tylko gdy dalej mała litera)
     s = re.sub(r"(\w)- ([a-ząćęłńóśźż])", r"\1\2", s)
+    s = re.sub(r"^[;:,.|\s]+", "", s)
     s = _strip_quotes(s)
     s = re.sub(r"[.;,]$", "", s).strip()
     s = _strip_quotes(s)

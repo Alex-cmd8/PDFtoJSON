@@ -114,7 +114,14 @@ class LLMClient:
                     continue
                 log.warning("LLM HTTP %s: %s", e.code, body)
                 return None
-            except (urllib.error.URLError, TimeoutError, KeyError) as e:
-                log.warning("LLM błąd: %s", e)
+            except (urllib.error.URLError, TimeoutError) as e:
+                # chwilowe problemy sieci (np. WinError 10013, timeout) – ponawiamy z przerwą
+                if attempt + 1 < retries:
+                    time.sleep(min(30, 2 ** attempt * 3))
+                    continue
+                log.warning("LLM błąd sieci: %s", e)
+                return None
+            except KeyError as e:
+                log.warning("LLM nieoczekiwana odpowiedź: %s", e)
                 return None
         return None

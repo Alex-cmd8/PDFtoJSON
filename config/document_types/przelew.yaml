@@ -8,7 +8,10 @@ classify:
   rules:
     - {pattern: 'potwierdzenie\W+(?:\w+\W+){0,3}(?:przelewu|transakcji|operacji)', weight: 4, where: head}
     - {pattern: '(?:polecenie|dowód wykonania) przelewu', weight: 3, where: head}
-    - {pattern: 'szczegóły (?:transakcji|operacji)|historia rachunku|wyciąg z rachunku|potwierdzenie operacji', weight: 3, where: head}
+    # OCR gubi znaki diakrytyczne („Szczególy”, „Szczegoly”)
+    - {pattern: 'szczeg[óo][łl]y (?:transakcji|operacji|zlecenia|przelewu)|historia rachunku|wyci[ąa]g z rachunku|potwierdzenie operacji', weight: 3, where: head}
+    # nagłówek formularza bankowego: „Przelew krajowy”, „Przelew Elixir”, „Przelew SEPA”
+    - {pattern: '^przelew (?:krajowy|zagraniczny|elixir|sepa|natychmiastowy|express)', weight: 3, where: head}
     - {pattern: 'rachun\w* (?:odbiorcy|beneficjenta|nadawcy|zleceniodawcy|obciąż\w*)|na rachunek|z rachunku', weight: 2}
     - {pattern: '\bkwot\w*', weight: 1}
     - {pattern: '\bbank\w*', weight: 1, where: head}
@@ -22,7 +25,7 @@ stop_labels:
   - 'waluta'
   - 'kana[łl]'
   - 'tryb'
-  - 'typ operacji'
+  - 'typ (?:operacji|transakcji)'
   - 'op[łl]ata'
   - 'nazwa'
   - 'adres'
@@ -56,7 +59,7 @@ fields:
       - '(?:dane )?(?:nadawc\w*|zleceniodawc\w*|p[łl]atnik)'
     patterns:
       - 'z rachunku(?: nr)?:? {v}'
-    nth: 0
+    # bez etykiety nie zgadujemy po kolejności rachunków (rozstrzyga model językowy)
   na_rachunek:
     type: account
     labels:
@@ -65,7 +68,7 @@ fields:
       - '(?:dane )?(?:odbiorc\w*|beneficjent\w*|adresat\w*(?: przelewu)?)'
     patterns:
       - 'na rachunek(?: nr)?:? {v}'
-    nth: 1
+    # bez etykiety nie zgadujemy po kolejności rachunków (rozstrzyga model językowy)
   kwota:
     type: amount
     labels:
@@ -82,7 +85,8 @@ fields:
       - 'data zlecenia'
       - 'data waluty'
     patterns:
-      - 'w dniu {v}'
+      # tylko konstrukcja z pisma banku: „w dniu X z rachunku nr …”
+      - 'w dniu {v},? z rachunku'
   numer_transakcji:
     type: token
     labels:
@@ -92,15 +96,14 @@ fields:
       - 'id (?:operacji|transakcji)'
       - 'identyfikator'
     patterns:
-      - '(?:numer|nr|identyfikator)\W+(?:\w+\W+){0,2}?{v}'
       - '\b(?P<v>CEN\d{8,})'
   tytul:
     type: text
     multiline: true
     labels:
-      - 'tytu[łl] przelewu'
-      - 'tytu[łl]em'
-      - 'tytu[łl]'
+      - 'tytu[łlt] przelewu'
+      - 'tytu[łlt]em'
+      - 'tytu[łlt]'
       - 'opis(?: operacji| przelewu| transakcji)?'
 
 output:
@@ -111,3 +114,22 @@ output:
     numer_transakcji: '{numer_transakcji}'
     tytul: '{tytul}'
     z_rachunku: '{z_rachunku}'
+
+# Pola uzupełniane przez model, gdy ścisłe reguły (etykiety formularza banku) nic nie znalazły.
+llm_fill:
+  fields:
+    z_rachunku: {path: przelew_bankowy.z_rachunku, type: account, opis: "numer rachunku nadawcy / zleceniodawcy (z którego wysłano przelew), 26 cyfr"}
+    na_rachunek: {path: przelew_bankowy.na_rachunek, type: account, opis: "numer rachunku odbiorcy / beneficjenta, 26 cyfr"}
+    data_operacji: {path: przelew_bankowy.data_operacji, type: date, opis: "data wykonania operacji (nie data wydruku), RRRR-MM-DD"}
+    kwota: {path: przelew_bankowy.kwota, type: amount, opis: "kwota przelewu jako liczba (np. 7500.00), bez waluty"}
+    tytul: {path: przelew_bankowy.tytul, type: text, opis: "tytuł przelewu (opis płatności), dokładnie jak w dokumencie"}
+
+# Poprawki typowych błędów OCR – stosowane wyłącznie do stron rozpoznanych przez OCR.
+# EasyOCR czyta znak minus kwoty obciążenia („-17,00 PLN”) jako cyfrę „2” („217,00”).
+# Poprawiamy tylko wtedy, gdy odczytana kwota nie jest kwotą urzędową, a po usunięciu
+# wiodącej „2” – jest: opłata skarbowa od pełnomocnictwa 17 zł (i jej wielokrotności),
+# wpis od odwołania 7 500 / 10 000 / 15 000 / 20 000 zł (rozporządzenie w sprawie wpisu).
+ocr_corrections:
+  - path: przelew_bankowy.kwota
+    kind: leading_minus_as_2
+    known: [17, 34, 51, 68, 85, 102, 7500, 10000, 15000, 20000]

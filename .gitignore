@@ -12,3 +12,4 @@ trace/
 .llm_cache/
 # modele OCR pobierane przy pierwszym uruchomieniu
 models/
+.ocr_cache/

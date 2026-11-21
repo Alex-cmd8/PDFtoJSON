@@ -23,6 +23,7 @@ DEFAULTS = {
     "min_chars_text_layer": 20,  # mniej znaków na stronie = traktujemy jak skan
     "max_pages": 3,          # dane kluczowe są na pierwszych stronach (README UZP); 0 = wszystkie
     "threads": 0,            # wątki CPU dla PyTorch; 0 = wszystkie rdzenie
+    "readtext": {},          # parametry detekcji EasyOCR (np. low_text, text_threshold)
 }
 
 _reader = None
@@ -55,7 +56,29 @@ def _get_reader(cfg: dict):
 
 
 def page_words(pdf_path: Path, page_index: int, cfg: dict) -> list[dict]:
-    """Słowa strony w formacie zgodnym z pdfplumber.extract_words (x0, x1, top, bottom, text, size)."""
+    """Słowa strony w formacie zgodnym z pdfplumber.extract_words (x0, x1, top, bottom, text, size).
+
+    Wynik jest cache'owany na dysku (klucz: skrót pliku + strona + ustawienia), więc ponowne
+    przetwarzanie tego samego skanu nie powtarza kosztownego OCR.
+    """
+    import hashlib
+    import json
+
+    cache_dir = ROOT / cfg.get("cache_dir", ".ocr_cache")
+    digest = hashlib.sha256(Path(pdf_path).read_bytes()).hexdigest()[:24]
+    rt = "".join(f"_{k}{v}" for k, v in sorted(cfg["readtext"].items()))
+    key = f"{digest}_p{page_index}_s{cfg['scale']}_c{cfg['min_confidence']}_{'-'.join(cfg['languages'])}{rt}"
+    cached = cache_dir / f"{key}.json"
+    if cached.exists():
+        return json.loads(cached.read_text(encoding="utf-8"))
+    words = _ocr_page(pdf_path, page_index, cfg)
+    if words or _reader is not None:
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        cached.write_text(json.dumps(words, ensure_ascii=False), encoding="utf-8")
+    return words
+
+
+def _ocr_page(pdf_path: Path, page_index: int, cfg: dict) -> list[dict]:
     reader = _get_reader(cfg)
     if reader is None:
         return []
@@ -68,7 +91,7 @@ def page_words(pdf_path: Path, page_index: int, cfg: dict) -> list[dict]:
         img = pdf[page_index].render(scale=scale).to_pil().convert("RGB")
     finally:
         pdf.close()
-    results = reader.readtext(np.array(img), detail=1, paragraph=False)
+    results = reader.readtext(np.array(img), detail=1, paragraph=False, **cfg["readtext"])
     words = []
     for box, text, conf in results:
         text = text.strip()
@@ -85,6 +108,6 @@ def page_words(pdf_path: Path, page_index: int, cfg: dict) -> list[dict]:
         for t in tokens:
             w = (x1 - x0) * len(t) / max(total, 1)
             words.append({"text": t, "x0": cursor, "x1": cursor + w, "top": top, "bottom": bottom,
-                          "size": height * 0.8, "upright": True, "ocr_conf": conf})
+                          "size": height * 0.8, "upright": True, "ocr_conf": float(conf)})
             cursor += w + (x1 - x0) / max(total, 1)
     return words

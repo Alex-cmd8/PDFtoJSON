@@ -24,5 +24,73 @@ options:
     - 'Pe[łl]nomocnictwo udzielone'
     - 'do reprezentowania'
     - 'prowadzon\w+ przez'
+  # strefa ustanowienia pełnomocników: od frazy udzielenia do pierwszego znacznika końca
+  grant_phrases_attorney:
+    - 'udziela\w* pe[łl]nomocnictwa'
+    - 'ustanawia\w* pe[łl]nomocnik\w*'
+    - 'upoważnia\w*'
+  grant_end:
+    - 'do reprezentowania'
+    - 'Pe[łl]nomocnictwo (?:udzielone|obejmuje|dotyczy|obowiązuje)'
+    - '§\s*3'
+    - '\bw post[ęe]powaniu'
+    - '\bw zakresie'
+  # etykieta kolumny/wiersza z pełnomocnikami w układach tabelarycznych (cała komórka)
+  attorney_label: 'PE[ŁL]NOMOCNI(?:K|CY)\s*:?'
+  attorney_label_stop: '^(?:Zamawiaj|Postępowanie|Zakres|Data|Pe[łl]nomocnictwo|Mocodawc|Dane)'
   natural_person_rx: 'prowadząc\w* działalność gospodarczą|CEIDG|Centralnej Ewidencji i Informacji'
   accept_phrase: 'pe[łl]nomocnictwo przyjmuj|przyjmuj[ęe] pe[łl]nomocnictwo|PE[ŁL]NOMOCNIK\s*:?$|^Pe[łl]nomocni(?:k|cy)\s*:?$'
+
+# Pola uzupełniane przez model, gdy ścisłe reguły nic nie znalazły (patrz odwolania2json/llm_fill.py).
+llm_fill:
+  fields:
+    # dane mocodawcy – tylko gdy reguły nie odczytały go wcale (typ pusty = szkielet)
+    mocodawca_typ:
+      path: "mocodawca[0].data.typ"
+      type: enum
+      values: [osoba_prawna, osoba_fizyczna]
+      opis: "rodzaj mocodawcy (udzielającego pełnomocnictwa): osoba_prawna (spółka, fundacja, instytucja) albo osoba_fizyczna (np. przedsiębiorca prowadzący działalność gospodarczą)"
+      only_if_null: ["mocodawca[0].data.typ"]
+    mocodawca_nazwa:
+      path: "mocodawca[0].data.nazwa"
+      type: text
+      opis: "pełna nazwa mocodawcy będącego osobą prawną, z formą prawną (np. „X Sp. z o.o.”), bez adresu; null dla osoby fizycznej; nie kancelaria pełnomocnika"
+      only_if_null: ["mocodawca[0].data.typ"]
+    mocodawca_imie:
+      path: "mocodawca[0].data.imie_nazwisko"
+      type: person
+      opis: "imię i nazwisko mocodawcy, jeśli jest osobą fizyczną (w mianowniku); null dla spółki"
+      only_if_null: ["mocodawca[0].data.typ"]
+    mocodawca_nip:
+      path: "mocodawca[0].data.nip"
+      type: nip
+      opis: "NIP mocodawcy (nie kancelarii pełnomocnika)"
+      only_if_null: ["mocodawca[0].data.typ"]
+    mocodawca_krs:
+      path: "mocodawca[0].data.krs"
+      type: krs
+      opis: "KRS mocodawcy; null jeśli brak"
+      only_if_null: ["mocodawca[0].data.typ"]
+    pelnomocnicy:
+      path: pelnomocnicy
+      type: list
+      item: {imie_nazwisko: person, pesel: pesel}
+      opis: "osoby, którym udzielono pełnomocnictwa (pełnomocnicy) – imię i nazwisko w mianowniku oraz PESEL, jeśli podany; nie wpisuj osób reprezentujących mocodawcę"
+    podpisujacy:
+      path: "mocodawca[*].podpisujacy"
+      type: list
+      item: {imie_nazwisko: person}
+      context: "data.nazwa"
+      opis: "osoby reprezentujące tego mocodawcę i podpisujące pełnomocnictwo w jego imieniu (np. członkowie zarządu, prokurent) – imię i nazwisko w mianowniku; nie wpisuj pełnomocników"
+    imie_mocodawcy:
+      path: "mocodawca[*].data.imie_nazwisko"
+      type: person
+      opis: "imię i nazwisko przedsiębiorcy (osoby fizycznej) prowadzącego tę firmę, w mianowniku"
+      only_if: {"data.typ": osoba_fizyczna}
+      context: "data.nazwa"
+  # spójność odpowiedzi modelu z formatem wyjścia
+  exclusive:
+    - {if: {"mocodawca[0].data.typ": osoba_fizyczna}, clear: ["mocodawca[0].data.nazwa", "mocodawca[0].data.krs"]}
+    - {if: {"mocodawca[0].data.typ": osoba_prawna}, clear: ["mocodawca[0].data.imie_nazwisko"]}
+  # osoba podpisująca za mocodawcę nie udziela pełnomocnictwa samej sobie
+  disjoint: {list: pelnomocnicy, against: "mocodawca[*].podpisujacy", key: imie_nazwisko}
