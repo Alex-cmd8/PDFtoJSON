@@ -10,3 +10,5 @@ trace/
 # klucze API i cache odpowiedzi LLM
 .env
 .llm_cache/
+# modele OCR pobierane przy pierwszym uruchomieniu
+models/

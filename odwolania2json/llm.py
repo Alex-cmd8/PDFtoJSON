@@ -64,9 +64,9 @@ class LLMClient:
         return bool(self.api_key) or bool(self.cfg.get("allow_anonymous"))
 
     def _throttle(self) -> None:
-        if self.api_key:
-            return
-        wait = self.cfg.get("anonymous_min_interval", 0) - (time.monotonic() - self._last_call)
+        """Odstęp między zapytaniami: `min_interval` (limit planu), bez klucza `anonymous_min_interval`."""
+        interval = self.cfg.get("min_interval", 0) if self.api_key else self.cfg.get("anonymous_min_interval", 0)
+        wait = interval - (time.monotonic() - self._last_call)
         if wait > 0:
             time.sleep(wait)
         self._last_call = time.monotonic()

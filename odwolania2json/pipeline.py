@@ -16,9 +16,10 @@ log = logging.getLogger("odwolania2json")
 
 def process_pdf(pdf: Path, cfg: Config) -> tuple[dict, dict]:
     """Zwraca (wynik JSON, ślad ekstrakcji)."""
-    doc = load_pdf(pdf)
+    doc = load_pdf(pdf, cfg.settings.get("ocr"))
     doc_type, scores = classify(doc, cfg)
-    trace = {"file": str(pdf), "doc_type": doc_type, "classification": scores, "fields": {}}
+    trace = {"file": str(pdf), "doc_type": doc_type, "classification": scores, "fields": {},
+             "ocr_pages": getattr(doc, "ocr_pages", 0)}
     if doc_type is None:
         return {}, trace
     dt = cfg.doc_types[doc_type]

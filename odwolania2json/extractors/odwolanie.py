@@ -94,7 +94,8 @@ def _attorney(ent_text: str, lex: Lexicon) -> dict:
         pm = re.search(PERSON_RX, rep)
         person = pm.group("person") if pm else None
     nazwa = None
-    if am := re.search(r"adres do korespondencji\s*:?\s*(.+?)(?:,\s*(?:ul\.|al\.|pl\.|os\.)|,\s*\d{2}-\d{3}|$)", ent_text, re.I):
+    # „korespondencji” bywa zniekształcone przez OCR („korespondencii”); adres może być w nowej linii bez przecinka
+    if am := re.search(r"adres do korespondencj?i+\s*:?\s*(.+?)(?:,?\s+(?:ul\.|al\.|pl\.|os\.)|,\s*\d{2}-\d{3}|$)", ent_text, re.I):
         nazwa = am.group(1).strip(" ,")
     tail = ent_text[m.start():]
     em = EMAIL_RX.search(tail)
@@ -215,8 +216,9 @@ def _action(text: str, opts: dict, dictionary: list[dict], trace: dict) -> tuple
                     trace["czynnosc"] = {"regula": f"wyzwalacz: {m.re.pattern[:60]}",
                                          "zdanie": (m.group(0) + sentence)[:300], "id": item["id"]}
                     return norm_date(m.group("v")), item["id"], item["opis"]
-    # zapasowo: pierwszy zarzut + pierwsza data „w dniu/z dnia”
-    zm = re.search(r"zarzut\w*\s*(?:nr\s*)?1\b(.{0,400})", text, re.I | re.S)
+    # zapasowo: pierwszy zarzut + pierwsza data „w dniu/z dnia” – to ZGADYWANIE, domyślnie wyłączone
+    # (lepiej null albo LLM niż pewna siebie błędna wartość); włączenie: action_fallback_zarzut: true
+    zm = opts.get("action_fallback_zarzut", False) and re.search(r"zarzut\w*\s*(?:nr\s*)?1\b(.{0,400})", text, re.I | re.S)
     if zm:
         seg = zm.group(1)
         for item in dictionary:
@@ -237,6 +239,39 @@ def _llm_client(cfg):
         from ..llm import LLMClient
         _LLM = LLMClient(cfg.settings.get("llm", {}))
     return _LLM
+
+
+def _normalize_answer(ans: dict) -> dict:
+    """Klucze bez polskich znaków (model pisze czasem „czynność_powod_id”), „null” jako tekst → None,
+    cytat bez formatowania Markdown."""
+    import unicodedata
+
+    def plain(k: str) -> str:
+        k = unicodedata.normalize("NFKD", str(k)).replace("ł", "l").replace("Ł", "L")
+        return "".join(c for c in k if not unicodedata.combining(c)).lower()
+
+    out = {}
+    for k, v in ans.items():
+        if isinstance(v, str):
+            v = v.replace("**", "").strip().strip('"„”')
+            if v.lower() in ("", "null", "none", "brak"):
+                v = None
+        out[plain(k)] = v
+    return out
+
+
+def _date_near_quote(text: str, quote: str | None) -> str | None:
+    """Pierwsza data (nie data ustawy) w zdaniu tekstu, które zawiera cytat podany przez model."""
+    if not quote:
+        return None
+    probe = re.sub(r"\s+", " ", quote).strip()[:30]
+    pos = text.find(probe) if len(probe) >= 12 else -1
+    if pos < 0:
+        return None
+    start = max(text.rfind(". ", 0, pos), 0)
+    end_m = _SENT_END.search(text, pos)
+    sentence = text[start: end_m.start() + 1 if end_m else pos + 400]
+    return _petitum_date(sentence)
 
 
 def _action_llm_step(text, rule_result, doc_type, cfg, dictionary, trace):
@@ -263,6 +298,7 @@ def _action_llm_step(text, rule_result, doc_type, cfg, dictionary, trace):
     if not isinstance(ans, dict):
         info["wynik"] = "brak odpowiedzi – zostaje reguła"
         return rule_result
+    ans = _normalize_answer(ans)
     by_id = {c["id"]: c for c in dictionary}
     try:
         pid = int(ans.get("czynnosc_powod_id")) if ans.get("czynnosc_powod_id") is not None else None
@@ -274,6 +310,12 @@ def _action_llm_step(text, rule_result, doc_type, cfg, dictionary, trace):
     # data: tylko taka, która rzeczywiście występuje w tekście (ochrona przed halucynacją)
     dates_in_text = {norm_date(m.group("v")) for m in re.finditer(DATE_RX, text, re.I)}
     d = ans.get("czynnosc_dzien")
+    if d is None:
+        # model nie podał daty – szukamy cytatu w tekście i bierzemy pierwszą datę z TEGO zdania
+        d = _date_near_quote(text, ans.get("cytat"))
+        info["data_z_cytatu"] = d
+    if isinstance(d, str) and d not in dates_in_text:
+        d = norm_date(d.strip()) or d  # model bywa niekonsekwentny w formacie („02.07.2025”)
     if d not in dates_in_text:
         info["data_odrzucona"] = d
         d = rule_result[0] if rule_result[1] == pid else None

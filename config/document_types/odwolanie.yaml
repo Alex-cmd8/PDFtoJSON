@@ -10,6 +10,9 @@ classify:
     - {pattern: 'Krajowej Izby Odwoławczej', weight: 1, where: head}
     - {pattern: 'zarzut\w* nr|zarzucam|wnosz[ęe] o', weight: 2}
     - {pattern: 'rachun\w* (?:odbiorcy|beneficjenta|nadawcy)|pe[łl]nomocnictwo przyjmuj', weight: -5}
+    # orzeczenia KIO, decyzje, poradniki – zawierają słownictwo odwołania, ale nim nie są
+    - {pattern: 'Sygn\.\s*akt|^\s*(?:WYROK|POSTANOWIENIE|DECYZJA|UCHWAŁA)\b|Krajowa Izba Odwoławcza\s*[-–]\s*w składzie', weight: -6, where: head}
+    - {pattern: 'DECYZJA\s*/\s*POSTANOWIENIE|Izba (?:orzekła|postanawia|umarza)|spis treści|kodeks\w* postępowania administracyjnego', weight: -4}
 
 extractor: odwolanie
 
@@ -114,7 +117,11 @@ llm:
     Zwróć JSON:
     {{"czynnosc_powod_id": <id z listy albo null>,
       "czynnosc_dzien": "<data tej czynności w formacie RRRR-MM-DD albo null>",
-      "cytat": "<zdanie z tekstu, na którym opierasz decyzję>"}}
+      "cytat": "<DOSŁOWNIE skopiowany fragment tekstu (bez zmian i skrótów), na którym opierasz decyzję, razem z datą>"}}
+
+    Datą czynności jest data, w której zamawiający jej dokonał lub poinformował o niej – także gdy stoi
+    w nawiasie albo w dalszej części zdania (np. „informacja z dnia …”, „zawiadomienie z …”).
+    Nie podawaj daty ustawy (np. „ustawy z dnia 11 września 2019 r.”). Zwróć null tylko, gdy daty naprawdę nie ma.
 
     Tekst odwołania:
     """

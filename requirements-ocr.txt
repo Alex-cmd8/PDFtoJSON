@@ -1,0 +1,3 @@
+# OCR skanów (opcjonalnie; bez tego skany dają pusty wynik)
+-r requirements.txt
+easyocr>=1.7

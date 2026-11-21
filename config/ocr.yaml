@@ -1,0 +1,15 @@
+# OCR dla stron bez warstwy tekstowej (skany). Silnik: EasyOCR (Apache 2.0), CPU, bez LLM.
+# Instalacja: pip install -r requirements-ocr.txt
+# Modele (~100 MB) pobierane są przy pierwszym uruchomieniu do models_dir (potem offline).
+enabled: true
+languages: [pl]
+# skala renderowania strony: 72 dpi * 2.2 ≈ 160 dpi (wyżej = dokładniej, ale wolniej)
+scale: 2.2
+min_confidence: 0.15
+models_dir: models/easyocr
+# strona z mniejszą liczbą znaków w warstwie tekstowej jest traktowana jak skan
+min_chars_text_layer: 20
+# OCR tylko pierwszych stron (dane kluczowe są na początku pisma); 0 = wszystkie
+max_pages: 3
+# wątki CPU (0 = wszystkie rdzenie)
+threads: 0

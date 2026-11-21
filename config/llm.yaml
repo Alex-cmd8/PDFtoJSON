@@ -1,17 +1,15 @@
 # Ustawienia modelu językowego (opcjonalny fallback dla pól semantycznych).
 # Dowolne API zgodne z OpenAI chat completions – zmiana dostawcy = zmiana tego pliku.
 #
-# OVHcloud AI Endpoints (Francja, UE): gpt-oss-20b – model open-weight (Apache 2.0, 21B, ~3.6B aktywnych).
-# (Mistral-Small-3.2-24B-Instruct-2506 jest w katalogu, ale bez klucza zwraca 429.)
-# Bez klucza działa dostęp anonimowy (limit 2 zapytania/min na IP i model);
-# z kluczem (OVHCLOUD_API_KEY w .env) – 400 zapytań/min.
-provider: ovhcloud
-base_url: https://oai.endpoints.kepler.ai.cloud.ovh.net/v1
-model: gpt-oss-20b
-api_key_env: OVHCLOUD_API_KEY
-allow_anonymous: false  # anonimowy limit OVH szybko się wyczerpuje (429) – tylko do testów
-# minimalny odstęp między zapytaniami bez klucza (2/min → 31 s)
-anonymous_min_interval: 31
+# Mistral AI (Francja, UE): rodzina Ministral 3 (3B / 8B / 14B) – modele open-weight, Apache 2.0.
+# Klucz: zmienna środowiskowa MISTRAL_API_KEY albo plik .env (w .gitignore).
+provider: mistral
+base_url: https://api.mistral.ai/v1
+model: ministral-8b-2512
+api_key_env: MISTRAL_API_KEY
+allow_anonymous: false
+# minimalny odstęp między zapytaniami (limity darmowego planu Mistral)
+min_interval: 1.2
 json_mode: true
 temperature: 0
 timeout: 90
@@ -20,5 +18,6 @@ max_retries: 4
 cache_dir: .llm_cache
 
 # Alternatywy (te same pola):
-#   Mistral AI:  base_url https://api.mistral.ai/v1, model mistral-small-latest, api_key_env MISTRAL_API_KEY
-#   Scaleway:    base_url https://api.scaleway.ai/v1, api_key_env SCW_SECRET_KEY (1M tokenów free tier)
+#   OVHcloud AI Endpoints: base_url https://oai.endpoints.kepler.ai.cloud.ovh.net/v1,
+#                          model Qwen3.5-9B / gpt-oss-20b, api_key_env OVHCLOUD_API_KEY
+#   Scaleway:              base_url https://api.scaleway.ai/v1, api_key_env SCW_SECRET_KEY

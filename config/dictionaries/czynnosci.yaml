@@ -33,8 +33,12 @@ czynnosci:
     opis: Modyfikacja treści SWZ
     patterns: ['zmodyfikowa\w*', 'modyfikac\w*', 'zmieni[łl] tre[śs][ćc]', 'zmian\w* tre[śs]ci (?:SWZ|specyfikacji)']
   - id: 6
-    opis: Odpowiedzi i wyjaśnienia do SWZ
+    opis: Odpowiedzi/wyjaśnienia do SWZ
     patterns: ['odpowiedzi (?:i wyja[śs]nie\w* )?(?:na pytania|do)', 'udzieli\w* odpowiedzi', 'wyja[śs]nie\w* tre[śs]ci (?:SWZ|specyfikacji)', 'wyja[śs]nienia do (?:tre[śs]ci )?(?:SWZ|specyfikacji)']
+  - id: 12
+    opis: Projektowane postanowienia umowy
+    llm_hint: wzór umowy / istotne postanowienia umowy (PPU) w dokumentach zamówienia
+    patterns: ['projektowan\w* postanowie\w* umowy', 'wz[óo]r\w* umowy', 'istotn\w* postanowie\w* umowy', '\bPPU\b']
   - id: 11
     opis: Opis przedmiotu zamówienia (OPZ)
     patterns: ['opis\w* przedmiotu zam[óo]wienia', '\bOPZ\b']
