@@ -88,8 +88,11 @@ def _validate(kind: str, value, text: str):
         dates = {norm_date(m.group("v")) for m in re.finditer(DATE_RX, text, re.I)}
         return d if d in dates else None
     if kind == "email":
+        # format adresu + obecność w tekście. Model bywa przepisuje zniekształcony przez OCR adres
+        # („aIybak@rybak-kancelaria example”) – lepiej puste pole niż błędny adres.
         v = str(value).strip().strip(".")
-        return v if v.lower() in text.lower() else None
+        ok = re.fullmatch(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)*\.[a-z]{2,}", v, re.I)
+        return v if ok and v.lower() in text.lower() else None
     if kind == "person":
         # imię i nazwisko w mianowniku: każde słowo musi mieć w tekście słowo o tym samym rdzeniu
         from .extractors.odwolanie import ORG_WORD_RX

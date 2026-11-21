@@ -46,6 +46,10 @@ def values_match(gt, pred, strict: bool = False) -> bool:
     g, p = _norm_str(str(gt)), _norm_str(str(pred))
     if g == p:
         return True
+    # adres e-mail jest albo poprawny, albo bezużyteczny – porównanie dokładne (organizatorzy podali
+    # 80% dla „długich stringów takich jak nazwy firm”; dla adresów nie mówili – przyjmujemy ostrożnie)
+    if "@" in g:
+        return False
     if not strict and len(g) >= FUZZY_MIN_LEN and re.search(r"[a-ząćęłńóśźż]", g):
         return SequenceMatcher(None, g, p).ratio() >= FUZZY_THRESHOLD
     return False
