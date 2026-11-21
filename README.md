@@ -110,7 +110,7 @@ Dodatkowo uczestnicy mogą dostarczyć:
 
 - repozytorium projektu,
 
-- dokumentację techniczną,
+- dokumentację techniczną w tym opis wykorzystanego LLM,
 
 - wyniki własnych testów jakości.
 
@@ -150,6 +150,9 @@ Wyniki wygenerowane przez rozwiązanie zostaną porównane z zestawem danych ref
 
 Podstawową miarą jakości będzie [wskaźnik F1](https://en.wikipedia.org/wiki/F-score).
 
+## Parametry maszyny na której będą testowane rozwiązania
+Będzie to laptop biurowy - 16GB RAM i Intel i7. Bez GPU. To oznacza, że dostarczone rozwiązanie, jeśli korzysta z LLM to powinno korzystać z API i być dostarczone z kluczem API. Obiecujemy nie wykorzystywać w innym celu niż proces testowy. API musi być świadczone przez firmę i z serwerów znajdujących się w EU/EOG.
+
 # 7. Kryteria oceny
 
 Etap 1 - preselekcja:
@@ -166,5 +169,7 @@ Ocena zgodności wyników z danymi referencyjnymi na nieznanym zbiorze testowym.
 
 ### 2. Elastyczność i możliwość rozbudowy rozwiązania – 50%
 
-Łatwość dodawania nowych typów dokumentów i nowych klas danych bez konieczności przebudowy całego systemu.
+Ocena uwzględniać będzie:
+* 1-20 pkt za moc modelu LLM. Im mocniejszy model liczony w bilionach parametrów, tym mniejsza ilość punktów. Innymi słowy, zależy nam na znalezieniu równowagi między skutecznością ekstrakcji, a kosztami.
+* 1-30 Łatwość dodawania nowych typów dokumentów i nowych klas danych bez konieczności przebudowy całego systemu.
 
