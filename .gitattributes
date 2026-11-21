@@ -1,3 +1,3 @@
-# skrypty Windows muszą mieć CRLF (cmd źle czyta etykiety/goto przy LF), skrypty sh – LF
-*.bat text eol=crlf
+# skrypty Windows przechowywane dosłownie z CRLF (cmd źle czyta etykiety/goto przy LF) – także w ZIP z GitHub
+*.bat -text
 *.sh text eol=lf
