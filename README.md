@@ -61,6 +61,8 @@ Odpowiedzialny za:
 
 Interfejs umożliwiający uruchomienie działania aplikacji poprzez CLI, wrapper script (np. plik ```start.bat```), lub inne analogiczne rozwiązanie.
 
+Dodanie do aplikacji GUI będzie dodatkowo punktowane, ale nie jest wymagane. Istotniejsza jest skuteczność identyfikacji informacji.
+
 ### Foldery input/output
 
 Foldery o nazwie ```input``` oraz ```output```, znajdujące się w folderze głównym aplikacji. Folder ```input``` użyty zostanie do przekazywania analizowanych plików do aplikacji, podczas gdy folder ```output``` zawierać będzie wynikowe pliki JSON.
@@ -138,7 +140,7 @@ Ocena zostanie przeprowadzona na dwóch zbiorach danych:
 
 ### Zbiór treningowy
 
-Udostępniony uczestnikom podczas realizacji wyzwania.
+Udostępniony uczestnikom podczas realizacji wyzwania dostępny w katalogu dane. Zbiór danych zawiera też kategorie dokumentów, które NIE powinny być zidentyfikowane (zwrócić pusty plik `.json`).
 
 ### Zbiór testowy
 
@@ -171,5 +173,5 @@ Ocena zgodności wyników z danymi referencyjnymi na nieznanym zbiorze testowym.
 
 Ocena uwzględniać będzie:
 * 1-20 pkt za moc modelu LLM. Im mocniejszy model liczony w bilionach parametrów, tym mniejsza ilość punktów. Innymi słowy, zależy nam na znalezieniu równowagi między skutecznością ekstrakcji, a kosztami.
-* 1-30 Łatwość dodawania nowych typów dokumentów i nowych klas danych bez konieczności przebudowy całego systemu.
-
+* 1-20 Łatwość dodawania nowych typów dokumentów i nowych klas danych bez konieczności przebudowy całego systemu.
+* 1-10 Inne ciekawe funkcje dodane do aplikacji (np. GUI)
