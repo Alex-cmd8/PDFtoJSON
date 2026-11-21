@@ -1,0 +1,24 @@
+{
+  "mocodawca": [
+    {
+      "data": {
+        "imie_nazwisko": "Grzegorz Łęcki",
+        "krs": null,
+        "nazwa": "Przedsiębiorstwo Handlowo-Usługowe „ŻUBR” Grzegorz Łęcki",
+        "nip": "9996152207",
+        "typ": "osoba_fizyczna"
+      },
+      "podpisujacy": [
+        {
+          "imie_nazwisko": "Grzegorz Łęcki"
+        }
+      ]
+    }
+  ],
+  "pelnomocnicy": [
+    {
+      "imie_nazwisko": "Zofia Żółkiewska-Dąbrowska",
+      "pesel": null
+    }
+  ]
+}

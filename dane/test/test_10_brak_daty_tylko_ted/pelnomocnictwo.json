@@ -1,0 +1,24 @@
+{
+  "mocodawca": [
+    {
+      "data": {
+        "imie_nazwisko": null,
+        "krs": "9991846620",
+        "nazwa": "Lubuskie Przedsiębiorstwo Energetyki Cieplnej LUBTERM sp. z o.o.",
+        "nip": "9990735518",
+        "typ": "osoba_prawna"
+      },
+      "podpisujacy": [
+        {
+          "imie_nazwisko": "Jacek Kozłowski"
+        }
+      ]
+    }
+  ],
+  "pelnomocnicy": [
+    {
+      "imie_nazwisko": "Edyta Mróz",
+      "pesel": null
+    }
+  ]
+}

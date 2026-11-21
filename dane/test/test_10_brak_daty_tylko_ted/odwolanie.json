@@ -1,0 +1,38 @@
+{
+  "OdwolanieKIO": {
+    "data": null,
+    "czynnosc_dzien": "2026-05-04",
+    "czynnosc_powod_id": 10,
+    "czynnosc_opis": "Zaniechanie unieważnienia postępowania",
+    "miejscowosc": null
+  },
+  "Odwolujacy": [
+    {
+      "krs": "9991846620",
+      "nazwa": "Lubuskie Przedsiębiorstwo Energetyki Cieplnej LUBTERM sp. z o.o.",
+      "nip": "9990735518",
+      "regon": "999247061",
+      "przez-pelnomocnika": 1,
+      "pelnomocnik": {
+        "imie_nazwisko": "Edyta Mróz",
+        "nazwa": "Mróz Legal Kancelaria Radcy Prawnego",
+        "mail": "biuro@mrozlegal.example"
+      }
+    }
+  ],
+  "Zamawiajacy": [
+    {
+      "krs": null,
+      "nazwa": "Gmina Świebodzinek",
+      "nip": "9996017742",
+      "regon": "999700319",
+      "prowadzacy_postepowanie": null
+    }
+  ],
+  "ZamowieniePubliczne": {
+    "numer_bzp": null,
+    "numer_postepowania": "ZP/PN/12/2026/WIM-II",
+    "numer_ted": "123456-2026",
+    "tytul": "Budowa sieci ciepłowniczej z przyłączami dla budynków komunalnych w Świebodzinku"
+  }
+}

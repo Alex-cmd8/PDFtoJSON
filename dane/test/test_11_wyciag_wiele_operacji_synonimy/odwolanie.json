@@ -1,0 +1,38 @@
+{
+  "OdwolanieKIO": {
+    "data": "2026-08-14",
+    "czynnosc_dzien": "2026-08-07",
+    "czynnosc_powod_id": 2,
+    "czynnosc_opis": "Ogłoszenie wyboru oferty",
+    "miejscowosc": "Katowice"
+  },
+  "Odwolujacy": [
+    {
+      "krs": "9995082317",
+      "nazwa": "Silesia Catering Group sp. z o.o.",
+      "nip": "9992741190",
+      "regon": "999602447",
+      "przez-pelnomocnika": 1,
+      "pelnomocnik": {
+        "imie_nazwisko": "Wiktor Król",
+        "nazwa": "Kancelaria Adwokacka Wiktor Król",
+        "mail": "wkrol@adwokat-katowice.example"
+      }
+    }
+  ],
+  "Zamawiajacy": [
+    {
+      "krs": "9997720163",
+      "nazwa": "Śląskie Centrum Opieki Długoterminowej",
+      "nip": "9995318804",
+      "regon": "999146228",
+      "prowadzacy_postepowanie": null
+    }
+  ],
+  "ZamowieniePubliczne": {
+    "numer_bzp": "2026/BZP00603985",
+    "numer_postepowania": "SCOD/DZP/22/2026",
+    "numer_ted": null,
+    "tytul": "Przygotowywanie i dostarczanie całodziennego wyżywienia dla pacjentów"
+  }
+}

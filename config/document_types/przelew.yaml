@@ -8,6 +8,7 @@ classify:
   rules:
     - {pattern: 'potwierdzenie\W+(?:\w+\W+){0,3}(?:przelewu|transakcji|operacji)', weight: 4, where: head}
     - {pattern: '(?:polecenie|dowód wykonania) przelewu', weight: 3, where: head}
+    - {pattern: 'szczegóły (?:transakcji|operacji)|historia rachunku|wyciąg z rachunku|potwierdzenie operacji', weight: 3, where: head}
     - {pattern: 'rachun\w* (?:odbiorcy|beneficjenta|nadawcy|zleceniodawcy|obciąż\w*)|na rachunek|z rachunku', weight: 2}
     - {pattern: '\bkwot\w*', weight: 1}
     - {pattern: '\bbank\w*', weight: 1, where: head}
@@ -39,8 +40,10 @@ stop_labels:
   - 'dane \w+'
   - 'szczegó[łl]y'
   - 'z poważaniem'
-  - 'bank nie ponosi'
-  - 'potwierdzenie ma charakter'
+  # stopki banków (całe zdania – kończą tytuł przelewu)
+  - 'bank nie ponosi.*'
+  - 'potwierdzenie ma charakter.*'
+  - 'dokument (?:wygenerowany|sporządzony|nie wymaga).*'
   - '\*{3}'
   - '-{5,}'
 
@@ -57,7 +60,7 @@ fields:
   na_rachunek:
     type: account
     labels:
-      - 'rachun\w* (?:odbiorcy|beneficjenta|docelow\w*|adresata)'
+      - 'rachun\w* (?:odbiorcy|beneficjenta|docelow\w*|adresata|uznan\w*)'
       - 'na rachunek(?: nr)?'
       - '(?:dane )?(?:odbiorc\w*|beneficjent\w*|adresat\w*(?: przelewu)?)'
     patterns:
@@ -73,7 +76,11 @@ fields:
   data_operacji:
     type: date
     labels:
-      - 'data (?:operacji|transakcji|wykonania|realizacji|ksi[ęe]gowania|zlecenia|obci[ąa]żenia)'
+      # w kolejności priorytetu: data wykonania operacji > księgowania > zlecenia > waluty
+      - 'data (?:operacji|transakcji|wykonania|realizacji)'
+      - 'data (?:ksi[ęe]gowania|obci[ąa]żenia)'
+      - 'data zlecenia'
+      - 'data waluty'
     patterns:
       - 'w dniu {v}'
   numer_transakcji:
@@ -83,6 +90,7 @@ fields:
       - 'nr (?:ref\.?|referencyjny|transakcji|operacji)'
       - 'identyfikator (?:operacji|transakcji)'
       - 'id (?:operacji|transakcji)'
+      - 'identyfikator'
     patterns:
       - '(?:numer|nr|identyfikator)\W+(?:\w+\W+){0,2}?{v}'
       - '\b(?P<v>CEN\d{8,})'

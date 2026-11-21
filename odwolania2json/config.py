@@ -44,6 +44,10 @@ def load_config(config_dir: str | Path = DEFAULT_CONFIG_DIR) -> Config:
             types[raw["name"]] = DocType(raw["name"], raw, f)
     settings_file = config_dir / "settings.yaml"
     settings = yaml.safe_load(settings_file.read_text(encoding="utf-8")) if settings_file.exists() else {}
+    settings = settings or {}
+    llm_file = config_dir / "llm.yaml"
+    if llm_file.exists():
+        settings["llm"] = yaml.safe_load(llm_file.read_text(encoding="utf-8")) or {}
     dicts = {}
     for f in sorted((config_dir / "dictionaries").glob("*.y*ml")) if (config_dir / "dictionaries").exists() else []:
         dicts[f.stem] = yaml.safe_load(f.read_text(encoding="utf-8"))

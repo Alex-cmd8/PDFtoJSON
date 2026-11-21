@@ -1,0 +1,35 @@
+{
+  "mocodawca": [
+    {
+      "data": {
+        "imie_nazwisko": null,
+        "krs": "9996601247",
+        "nazwa": "Gryf Infrastruktura S.A.",
+        "nip": "9994028835",
+        "typ": "osoba_prawna"
+      },
+      "podpisujacy": [
+        {
+          "imie_nazwisko": "Magdalena Pietrzak-Ziółkowska"
+        },
+        {
+          "imie_nazwisko": "Hubert Ćwikliński"
+        }
+      ]
+    }
+  ],
+  "pelnomocnicy": [
+    {
+      "imie_nazwisko": "Krzysztof Wróblewski-Ostoja",
+      "pesel": null
+    },
+    {
+      "imie_nazwisko": "Agnieszka Nowak-Kowalska",
+      "pesel": "81020714328"
+    },
+    {
+      "imie_nazwisko": "Józef Ślązak",
+      "pesel": "96111803554"
+    }
+  ]
+}

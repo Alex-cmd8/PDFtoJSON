@@ -1,0 +1,38 @@
+{
+  "OdwolanieKIO": {
+    "data": "2026-10-09",
+    "czynnosc_dzien": "2026-10-01",
+    "czynnosc_powod_id": 1,
+    "czynnosc_opis": "Decyzja o odrzuceniu oferty",
+    "miejscowosc": "Kraków"
+  },
+  "Odwolujacy": [
+    {
+      "krs": null,
+      "nazwa": "INSTAL-PRO Marek Sowa",
+      "nip": "9998801422",
+      "regon": "999170355",
+      "przez-pelnomocnika": 1,
+      "pelnomocnik": {
+        "imie_nazwisko": "Szymon Adamczyk",
+        "nazwa": "Kancelaria Radcy Prawnego Szymon Adamczyk",
+        "mail": "s.adamczyk@radca.example"
+      }
+    }
+  ],
+  "Zamawiajacy": [
+    {
+      "krs": null,
+      "nazwa": "Gmina Wadowice",
+      "nip": "9993342818",
+      "regon": "999072201",
+      "prowadzacy_postepowanie": null
+    }
+  ],
+  "ZamowieniePubliczne": {
+    "numer_bzp": "2026/BZP00890456",
+    "numer_postepowania": "ZP.271.58.2026",
+    "numer_ted": null,
+    "tytul": "Termomodernizacja budynków użyteczności publicznej wraz z montażem instalacji fotowoltaicznych"
+  }
+}

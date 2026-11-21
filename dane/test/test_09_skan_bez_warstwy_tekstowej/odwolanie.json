@@ -1,0 +1,38 @@
+{
+  "OdwolanieKIO": {
+    "data": "2026-04-17",
+    "czynnosc_dzien": "2026-04-08",
+    "czynnosc_powod_id": 4,
+    "czynnosc_opis": "Publikacja specyfikacji warunków zamówienia (SWZ)",
+    "miejscowosc": "Toruń"
+  },
+  "Odwolujacy": [
+    {
+      "krs": "9992701458",
+      "nazwa": "Kujawska Grupa Drogowa sp. z o.o.",
+      "nip": "9995906632",
+      "regon": "999416277",
+      "przez-pelnomocnika": 1,
+      "pelnomocnik": {
+        "imie_nazwisko": "Natalia Krawczyk",
+        "nazwa": "Kancelaria Radcy Prawnego Natalia Krawczyk",
+        "mail": "n.krawczyk@kancelaria-torun.example"
+      }
+    }
+  ],
+  "Zamawiajacy": [
+    {
+      "krs": null,
+      "nazwa": "Miejski Zarząd Dróg w Inowrocławku",
+      "nip": "9997260419",
+      "regon": "999358812",
+      "prowadzacy_postepowanie": null
+    }
+  ],
+  "ZamowieniePubliczne": {
+    "numer_bzp": "2026/BZP00377410",
+    "numer_postepowania": "MZD.ZP.3.2026",
+    "numer_ted": null,
+    "tytul": "Remont nawierzchni ulic osiedla Rąbinek wraz z przebudową kanalizacji deszczowej"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "mocodawca": [
+    {
+      "data": {
+        "imie_nazwisko": null,
+        "krs": "9993381150",
+        "nazwa": "Wielkopolskie Studio Projektowe ARCADA sp. z o.o.",
+        "nip": "9997713046",
+        "typ": "osoba_prawna"
+      },
+      "podpisujacy": [
+        {
+          "imie_nazwisko": "Oskar Banaszak"
+        }
+      ]
+    }
+  ],
+  "pelnomocnicy": [
+    {
+      "imie_nazwisko": "Weronika Szulc",
+      "pesel": null
+    },
+    {
+      "imie_nazwisko": "Tadeusz Grabowski",
+      "pesel": null
+    }
+  ]
+}

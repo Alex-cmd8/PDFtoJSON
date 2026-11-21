@@ -14,15 +14,19 @@ classify:
 extractor: odwolanie
 
 options:
-  # nagłówki sekcji stron (początek linii)
+  # nagłówki sekcji stron (początek linii, WIELKOŚĆ LITER ISTOTNA: „zamawiających:” z zawiniętego
+  # pod-nagłówka ani „działający przez…” nie są nagłówkami)
   section_headers:
     odwolujacy: '^Odwołując\w*(?:\s*\(.*?\))?\s*:?'
     zamawiajacy: '^Zamawiając\w*(?:\s*\(.*?\))?\s*:?'
-    inne: '^(?:Prezes Krajowej Izby|Krajowa Izba Odwo|Wykonawca wybrany|Przystępując\w*|Uczestni\w*|dotyczy|O\s?D\s?W\s?O\s?[ŁL]\s?A\s?N\s?I\s?E|Działając|Wartość zamówienia|Wpis od)'
+    inne: '^(?:Prezes Krajowej Izby|Krajowa Izba Odwo|Wykonawca wybrany|Przystępując\w*|Uczestni\w*|[Dd]otyczy|O\s?D\s?W\s?O\s?[ŁL]\s?A\s?N\s?I\s?E|Działając|Wartość zamówienia|Wpis od)'
   # linie, które nie są nazwą podmiotu (adres, identyfikatory, kontakt)
-  non_name_line: '^(?:ul\.|al\.|pl\.|os\.|aleja|\d{2}-\d{3}|KRS|NIP|REGON|tel\.|e-mail|adres|reprezentowan|przedsiębiorca|prowadząc|wpisan|[\w.+-]+@)'
+  # (także każda linia z kodem pocztowym, np. „Rynek 1, 45-015 Opolec” – adres bez „ul.”)
+  non_name_line: '^(?:ul\.|al\.|pl\.|os\.|aleja|\d{2}-\d{3}|KRS|NIP|REGON|tel\.|e-mail|adres|reprezentowan|przedsiębiorca|prowadząc|wpisan|działając|[\w.+-]+@)|.*,\s*\d{2}-\d{3}\s+\S'
   # pod-nagłówki podmiotów w sekcji (konsorcjum, zamawiający wspólni)
+  # pod-nagłówek „N) …:”; może być zawinięty na 2 linie (druga linia zaczyna się małą literą)
   entity_subheader: '^\d+\)\s*.*:\s*$'
+  entity_subheader_start: '^\d+\)\s*(?:Zamawiając|Wykonawc|Lider|Partner|Członek|Uczestnik|Konsorcj)'
   leader_rx: 'lider|prowadząc\w* postępowanie'
   # nagłówek pisma: „Miejscowość, dnia DD.MM.RRRR” – szukany na stronach 0..header_max_page
   header_max_page: 0
@@ -30,10 +34,36 @@ options:
   # innych postępowań przywołanych w uzasadnieniu
   zone_start: '\bdotyczy\b'
   zone_end: 'Działając w imieniu|\bwnosz[ęe]\b|\bZarzut\w*\b|zarzucam|Wartość zamówienia'
+  # układ tabelaryczny stron („Strona | Pole | Dane”) zamieniany na zwykłe linie sekcji
+  table_layout:
+    parties:
+      'Odwołując': 'Odwołujący:'
+      'Zamawiając': 'Zamawiający:'
+      'Pełnomocnik': pelnomocnik   # wiersze dopisywane do sekcji odwołującego
+    fields:
+      'Nazwa': '{v}'
+      'Adres': '{v}'
+      'KRS': 'KRS: {v}'
+      'NIP': 'NIP: {v}'
+      'REGON': 'REGON: {v}'
+      'E-?mail': 'e-mail: {v}'
+      'Osoba': 'reprezentowany przez: {v}'
+      'Kancelaria': 'adres do korespondencji: {v}'
   # zdanie z zaskarżoną czynnością; {date} = data czynności.
   # Poziomy sprawdzane po kolei: kolejny poziom tylko gdy poprzedni nic nie sklasyfikował.
   action_triggers:
     - - 'Zamawiający\s+w\s+dniu\s+{date}'
+    # petitum: „Wnoszę odwołanie od/wobec czynności … w dniu <data>” – klasa = najwcześniej
+    # wymieniona czynność w zdaniu, data = pierwsza data w zdaniu (z pominięciem dat ustaw)
+    - mode: petitum
+      patterns:
+        - '(?-i:W)nosz[ęe]\s+odwołanie'
+        - '(?-i:O)dwołanie\s+wnosz[ęe]'
+        - 'odwołanie\s+(?:od|wobec)\s+(?:czynności|zaniechani)'
+        - '(?-i:Z)askarżam'
+        - '(?-i:O)dwołujący\s+(?:kwestionuje|zaskarża|zarzuca)'
+        # pierwsze zdanie po tytule pisma (O D W O Ł A N I E) to zwykle petitum
+        - '(?-i:O\s?D\s?W\s?O\s?Ł\s?A\s?N\s?I\s?E)(?!\s*(?:dotyczy|Działając))\s'
     - - '(?:^|[.;:]\s+)(?-i:W)\s+dniu\s+{date}\s*(?:r\.|roku)?,?\s+Zamawiający'
       - '(?:^|[.;:]\s+)(?-i:P)ismem\s+z\s+dnia\s+{date}\s*(?:r\.|roku)?,?\s+Zamawiający'
       - 'Zamawiający,?\s+(?:pismem|w\s+piśmie|w\s+informacji|informacją)\s+z\s+dnia\s+{date}'
@@ -63,3 +93,30 @@ fields:
       - '\bpn\.\s*:?\s*[„"](?P<v>(?:[^„”"]|„[^„”"]*”){5,400})[”"]'
       - 'pod nazwą\s*:?\s*[„"](?P<v>(?:[^„”"]|„[^„”"]*”){5,400})[”"]'
       - 'dotyczy\W+(?:\w+\W+){0,12}?[„"](?P<v>(?:[^„”"]|„[^„”"]*”){5,400})[”"]'
+
+# Model językowy dla zaskarżonej czynności (ustawienia połączenia: config/llm.yaml).
+# mode: off | fallback (LLM tylko gdy reguły nie znalazły zdania z czynnością) | always
+llm:
+  mode: fallback
+  max_chars: 8000
+  system_prompt: |
+    Jesteś ekspertem od prawa zamówień publicznych (ustawa Pzp). Analizujesz odwołania do Krajowej
+    Izby Odwoławczej. Odpowiadasz wyłącznie obiektem JSON, bez komentarzy.
+  user_prompt: |
+    Ustal czynność (lub zaniechanie) zamawiającego zaskarżoną w poniższym odwołaniu – tę, od której
+    liczy się termin na wniesienie odwołania. Najczęściej opisuje ją zdanie w rodzaju
+    „Zamawiający w dniu <data> <czynność>”. Nie myl jej z czynnościami wcześniejszymi
+    (np. „Uprzednio, w dniu …”, wezwania do wyjaśnień, otwarcie ofert).
+
+    Wybierz dokładnie jedną kategorię z listy (id: opis):
+    {classes}
+
+    Zwróć JSON:
+    {{"czynnosc_powod_id": <id z listy albo null>,
+      "czynnosc_dzien": "<data tej czynności w formacie RRRR-MM-DD albo null>",
+      "cytat": "<zdanie z tekstu, na którym opierasz decyzję>"}}
+
+    Tekst odwołania:
+    """
+    {text}
+    """

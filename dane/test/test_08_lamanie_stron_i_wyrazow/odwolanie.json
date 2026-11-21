@@ -1,0 +1,38 @@
+{
+  "OdwolanieKIO": {
+    "data": "2026-07-21",
+    "czynnosc_dzien": "2026-07-14",
+    "czynnosc_powod_id": 9,
+    "czynnosc_opis": "Decyzja o unieważnieniu postępowania",
+    "miejscowosc": "Rzeszów"
+  },
+  "Odwolujacy": [
+    {
+      "krs": "9994400918",
+      "nazwa": "Hydrotech Rzeszów S.A.",
+      "nip": "9998350271",
+      "regon": "999611449",
+      "przez-pelnomocnika": 1,
+      "pelnomocnik": {
+        "imie_nazwisko": "Dominika Jaworska",
+        "nazwa": "Jaworska Pawlak Adwokaci sp.p.",
+        "mail": "kancelaria@jaworska-pawlak.example"
+      }
+    }
+  ],
+  "Zamawiajacy": [
+    {
+      "krs": "9990077214",
+      "nazwa": "Rzeszowskie Wodociągi i Kanalizacja sp. z o.o.",
+      "nip": "9993918860",
+      "regon": "999500271",
+      "prowadzacy_postepowanie": null
+    }
+  ],
+  "ZamowieniePubliczne": {
+    "numer_bzp": null,
+    "numer_postepowania": "RWiK/ZP/PN/17/2026",
+    "numer_ted": "402771-2026",
+    "tytul": "Rozbudowa i przebudowa oczyszczalni ścieków wraz z wdrożeniem systemu sterowania procesem technologicznym i modernizacją ciągu osadowego"
+  }
+}

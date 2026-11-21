@@ -1,0 +1,38 @@
+{
+  "OdwolanieKIO": {
+    "data": "2026-02-27",
+    "czynnosc_dzien": "2026-02-19",
+    "czynnosc_powod_id": 5,
+    "czynnosc_opis": "Modyfikacja treści SWZ",
+    "miejscowosc": "Szczecin"
+  },
+  "Odwolujacy": [
+    {
+      "krs": "9996601247",
+      "nazwa": "Gryf Infrastruktura S.A.",
+      "nip": "9994028835",
+      "regon": "999213907",
+      "przez-pelnomocnika": 1,
+      "pelnomocnik": {
+        "imie_nazwisko": "Krzysztof Wróblewski-Ostoja",
+        "nazwa": "Kancelaria Wróblewski-Ostoja i Partnerzy sp.p.",
+        "mail": "kio@wroblewski-ostoja.example"
+      }
+    }
+  ],
+  "Zamawiajacy": [
+    {
+      "krs": null,
+      "nazwa": "Zachodniopomorski Zarząd Dróg Wojewódzkich",
+      "nip": "9992273041",
+      "regon": "999660518",
+      "prowadzacy_postepowanie": null
+    }
+  ],
+  "ZamowieniePubliczne": {
+    "numer_bzp": null,
+    "numer_postepowania": "ZZDW-ZP.3310.4.2026",
+    "numer_ted": "118204-2026",
+    "tytul": "Przebudowa drogi wojewódzkiej nr 142 na odcinku Chociwel – Dobrzany wraz z budową ścieżki rowerowej"
+  }
+}

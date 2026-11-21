@@ -23,8 +23,16 @@ python eval/f1.py --gt dane --pred out --strict   # bez dopasowania rozmytego
 ```
 
 Reguły liczenia wg organizatorów: TP/TN/FP/FN per pole, długie napisy porównywane
-z progiem podobieństwa 80%. Wynik na zbiorze treningowym (60 spraw, 180 PDF):
-**F1 = 1.000** (tryb `--strict`: 0.9998).
+z progiem podobieństwa 80%. Wyniki:
+
+| Zbiór | F1 | `--strict` |
+|---|---|---|
+| treningowy `dane/przyklad_*` (60 spraw, 180 PDF) | 1.000 | 1.000 |
+| testy obciążeniowe `dane/test` (12 spraw, 34 PDF) | 0.957 | 418/455 pól; brakujące 37 to wyłącznie skan bez warstwy tekstowej |
+
+```
+python eval/f1.py --gt dane --pred out --cases "przyklad_*"   # tylko sprawy treningowe
+```
 
 ## Architektura
 
@@ -51,6 +59,27 @@ PDF ─► pdftext (linie + kolumny z pozycji słów)
 Dodaj `config/document_types/<typ>.yaml` z `extractor: rules`, regułami `classify`,
 polami (`labels` / `patterns` / `type`) i szablonem `output`. Wzorem jest `przelew.yaml`,
 który obsługuje ~15 różnych szablonów bankowych wyłącznie konfiguracją.
+
+## LLM (opcjonalnie): zaskarżona czynność
+
+Pola `czynnosc_powod_id`, `czynnosc_opis`, `czynnosc_dzien` mogą być uzupełniane przez model
+językowy przez dowolne API zgodne z OpenAI. Domyślnie: gpt-oss-20b (open-weight, Apache 2.0)
+na OVHcloud AI Endpoints (UE). Dostawcę i model zmienia się w `config/llm.yaml`
+(przykłady dla Mistral AI i Scaleway w komentarzach); prompt i tryb: sekcja `llm`
+w `config/document_types/odwolanie.yaml`.
+
+- `fallback` (domyślnie) – LLM tylko gdy reguły nie znalazły zdania z czynnością,
+- `always` – LLM dla każdego odwołania (porównanie z regułami), `off` – same reguły.
+
+Odpowiedź modelu jest walidowana: id musi istnieć w słowniku (opis bierzemy ze słownika,
+nie z modelu), data musi występować w tekście. Ślad (`--trace`) pokazuje odpowiedź i decyzję.
+Klucz: zmienna `OVHCLOUD_API_KEY` lub plik `.env` (w `.gitignore`, wzór w `.env.example`).
+Bez klucza działają same reguły.
+
+```
+python run.py --input dane --output out --llm-mode always --trace trace
+python eval/f1.py --gt dane --pred out --details
+```
 
 ## Znane ograniczenia
 

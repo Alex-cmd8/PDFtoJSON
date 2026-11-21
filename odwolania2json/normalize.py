@@ -66,11 +66,33 @@ def norm_digits(n: int) -> Callable[[str], str | None]:
     return f
 
 
+def _strip_quotes(s: str) -> str:
+    """Zdejmuje cudzysłów otaczający całą wartość, ale nie zamykający cudzysłów wewnętrzny
+    („Dostawa … „Rejon Północ”” → „Dostawa … „Rejon Północ””, a nie „… „Rejon Północ”)."""
+    def opens(t): return t.count("„") + t.count("“")
+    s = s.strip()
+    # para otaczająca, jeśli środek pozostaje zrównoważony
+    if len(s) > 1 and s[0] in "„“\"" and s[-1] in "”\"":
+        inner = s[1:-1]
+        if opens(inner) == inner.count("”"):
+            s = inner.strip()
+    # pojedynczy, niesparowany cudzysłów na brzegu
+    while s and s[0] in "„“" and opens(s) > s.count("”"):
+        s = s[1:].strip()
+    while s and s[-1] == "”" and s.count("”") > opens(s):
+        s = s[:-1].strip()
+    if s.count('"') % 2 == 1:
+        s = s.strip('"').strip()
+    return s
+
+
 def norm_text(s: str) -> str | None:
     s = re.sub(r"\s+", " ", s).strip()
-    s = s.strip("„”\"'“ ")
+    # przeniesienie wyrazu na końcu linii: „wdro- żeniem” → „wdrożeniem” (tylko gdy dalej mała litera)
+    s = re.sub(r"(\w)- ([a-ząćęłńóśźż])", r"\1\2", s)
+    s = _strip_quotes(s)
     s = re.sub(r"[.;,]$", "", s).strip()
-    s = s.strip("„”\"'“ ")
+    s = _strip_quotes(s)
     return s or None
 
 

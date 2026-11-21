@@ -1,0 +1,38 @@
+{
+  "OdwolanieKIO": {
+    "data": "2026-10-02",
+    "czynnosc_dzien": "2026-09-25",
+    "czynnosc_powod_id": 11,
+    "czynnosc_opis": "Opis przedmiotu zamówienia (OPZ)",
+    "miejscowosc": "Poznań"
+  },
+  "Odwolujacy": [
+    {
+      "krs": "9993381150",
+      "nazwa": "Wielkopolskie Studio Projektowe ARCADA sp. z o.o.",
+      "nip": "9997713046",
+      "regon": "999551820",
+      "przez-pelnomocnika": 1,
+      "pelnomocnik": {
+        "imie_nazwisko": "Weronika Szulc",
+        "nazwa": "Szulc Grabowski Kancelaria Prawna s.c.",
+        "mail": "kontakt@szulc-grabowski.example"
+      }
+    }
+  ],
+  "Zamawiajacy": [
+    {
+      "krs": null,
+      "nazwa": "Uniwersytet Przyrodniczy w Kórnikowie",
+      "nip": "9990120884",
+      "regon": "999137505",
+      "prowadzacy_postepowanie": null
+    }
+  ],
+  "ZamowieniePubliczne": {
+    "numer_bzp": "2026/BZP00811947",
+    "numer_postepowania": "DZP-PN-062/2026",
+    "numer_ted": null,
+    "tytul": "Opracowanie dokumentacji projektowej przebudowy budynku Collegium Zoologicum"
+  }
+}

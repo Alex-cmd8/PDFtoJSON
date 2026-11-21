@@ -1,0 +1,24 @@
+{
+  "mocodawca": [
+    {
+      "data": {
+        "imie_nazwisko": null,
+        "krs": "9995082317",
+        "nazwa": "Silesia Catering Group sp. z o.o.",
+        "nip": "9992741190",
+        "typ": "osoba_prawna"
+      },
+      "podpisujacy": [
+        {
+          "imie_nazwisko": "Beata Szewczyk"
+        }
+      ]
+    }
+  ],
+  "pelnomocnicy": [
+    {
+      "imie_nazwisko": "Wiktor Król",
+      "pesel": null
+    }
+  ]
+}

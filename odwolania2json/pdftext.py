@@ -21,6 +21,13 @@ class Cell:
     x0: float
     x1: float
     text: str
+    # słowa komórki z pozycją X – pozwalają przyciąć komórkę do granicy kolumny
+    words: list = field(default_factory=list)
+
+    def text_before(self, xlim: float | None) -> str:
+        if xlim is None or not self.words:
+            return self.text
+        return " ".join(t for x0, x1, t in self.words if x0 < xlim - 2)
 
 
 @dataclass
@@ -69,9 +76,10 @@ def _group_lines(words: list[dict], page_no: int, y_tol: float = 3.0) -> list[Li
             gap_limit = max(char_w * 2.2, 6.0)
             if cells and w["x0"] - cells[-1].x1 <= gap_limit:
                 cells[-1].text += " " + w["text"]
+                cells[-1].words.append((w["x0"], w["x1"], w["text"]))
                 cells[-1].x1 = w["x1"]
             else:
-                cells.append(Cell(w["x0"], w["x1"], w["text"]))
+                cells.append(Cell(w["x0"], w["x1"], w["text"], [(w["x0"], w["x1"], w["text"])]))
         lines.append(Line(page_no, row[0]["top"], cells))
     return lines
 
@@ -82,7 +90,17 @@ def load_pdf(path: str | Path) -> Document:
     with pdfplumber.open(path) as pdf:
         n = len(pdf.pages)
         for i, page in enumerate(pdf.pages):
-            words = page.extract_words(x_tolerance=1.5, y_tolerance=2, keep_blank_chars=False)
+            words = page.extract_words(x_tolerance=1.5, y_tolerance=2, keep_blank_chars=False,
+                                       extra_attrs=["size"])
+            # znak wodny („KOPIA”, „WZÓR”) – litery wielokrotnie większe niż tekst strony
+            if words:
+                sizes = sorted(w["size"] for w in words)
+                median = sizes[len(sizes) // 2]
+                words = [w for w in words if w["size"] <= 2.5 * median and w.get("upright", True)]
+                # żywa pagina / stopka: drobniejsza czcionka w marginesie strony (np. „Odwołanie – sprawa …”)
+                margin = 0.06 * page.height
+                words = [w for w in words
+                         if not ((w["top"] < margin or w["top"] > page.height - margin) and w["size"] < 0.9 * median)]
             for line in _group_lines(words, i):
                 if _PAGE_FOOTER.match(line.text):
                     continue

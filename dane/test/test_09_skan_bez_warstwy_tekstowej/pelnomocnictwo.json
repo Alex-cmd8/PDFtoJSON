@@ -1,0 +1,27 @@
+{
+  "mocodawca": [
+    {
+      "data": {
+        "imie_nazwisko": null,
+        "krs": "9992701458",
+        "nazwa": "Kujawska Grupa Drogowa sp. z o.o.",
+        "nip": "9995906632",
+        "typ": "osoba_prawna"
+      },
+      "podpisujacy": [
+        {
+          "imie_nazwisko": "Leszek Urbaniak"
+        },
+        {
+          "imie_nazwisko": "Halina Czerwińska"
+        }
+      ]
+    }
+  ],
+  "pelnomocnicy": [
+    {
+      "imie_nazwisko": "Natalia Krawczyk",
+      "pesel": null
+    }
+  ]
+}

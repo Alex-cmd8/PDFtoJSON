@@ -1,0 +1,38 @@
+{
+  "OdwolanieKIO": {
+    "data": "2026-05-05",
+    "czynnosc_dzien": "2026-04-28",
+    "czynnosc_powod_id": 3,
+    "czynnosc_opis": "Decyzja o wykluczeniu wykonawcy",
+    "miejscowosc": "Gdynia"
+  },
+  "Odwolujacy": [
+    {
+      "krs": "0000412345",
+      "nazwa": "Kormoran Systemy Pomiarowe sp. z o.o.",
+      "nip": "9995412783",
+      "regon": "99928467000017",
+      "przez-pelnomocnika": 1,
+      "pelnomocnik": {
+        "imie_nazwisko": "Marta Żurawska",
+        "nazwa": "Żurawska i Wspólnicy Kancelaria Radców Prawnych sp.p.",
+        "mail": "kancelaria@zurawska.example"
+      }
+    }
+  ],
+  "Zamawiajacy": [
+    {
+      "krs": "0000187654",
+      "nazwa": "Port Morski Gdynia Usługi Techniczne S.A.",
+      "nip": "9993307218",
+      "regon": "999102384",
+      "prowadzacy_postepowanie": null
+    }
+  ],
+  "ZamowieniePubliczne": {
+    "numer_bzp": "2026/BZP00512377",
+    "numer_postepowania": "PMG/ZP/TT/04/2026",
+    "numer_ted": null,
+    "tytul": "Dostawa i montaż systemu monitoringu przemieszczeń nabrzeży wraz z serwisem gwarancyjnym"
+  }
+}

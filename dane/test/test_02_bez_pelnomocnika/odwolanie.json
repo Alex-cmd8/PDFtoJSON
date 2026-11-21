@@ -1,0 +1,38 @@
+{
+  "OdwolanieKIO": {
+    "data": "2026-06-12",
+    "czynnosc_dzien": "2026-06-05",
+    "czynnosc_powod_id": 2,
+    "czynnosc_opis": "Ogłoszenie wyboru oferty",
+    "miejscowosc": "Opole"
+  },
+  "Odwolujacy": [
+    {
+      "krs": "9994471203",
+      "nazwa": "Brzask Usługi Komunalne sp. z o.o.",
+      "nip": "9997120563",
+      "regon": "999358140",
+      "przez-pelnomocnika": 0,
+      "pelnomocnik": {
+        "imie_nazwisko": null,
+        "nazwa": null,
+        "mail": null
+      }
+    }
+  ],
+  "Zamawiajacy": [
+    {
+      "krs": null,
+      "nazwa": "Gmina Miasto Opolec",
+      "nip": "9995530214",
+      "regon": "999021477",
+      "prowadzacy_postepowanie": null
+    }
+  ],
+  "ZamowieniePubliczne": {
+    "numer_bzp": "2026/BZP00733102",
+    "numer_postepowania": "GMO.271.33.2026",
+    "numer_ted": null,
+    "tytul": "Odbiór i zagospodarowanie odpadów komunalnych z nieruchomości zamieszkałych na terenie Gminy Miasto Opolec"
+  }
+}

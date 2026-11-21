@@ -1,0 +1,38 @@
+{
+  "OdwolanieKIO": {
+    "data": "2026-02-12",
+    "czynnosc_dzien": "2026-02-02",
+    "czynnosc_powod_id": 8,
+    "czynnosc_opis": "Zaniechanie wykluczenia wykonawcy",
+    "miejscowosc": "Łódź"
+  },
+  "Odwolujacy": [
+    {
+      "krs": "9998412270",
+      "nazwa": "Sygnet Ochrona Mienia sp. z o.o. sp.k.",
+      "nip": "9991562209",
+      "regon": "999287344",
+      "przez-pelnomocnika": 1,
+      "pelnomocnik": {
+        "imie_nazwisko": "Olga Wasilewska",
+        "nazwa": "Wasilewska Kaczmarczyk Kancelaria sp. z o.o.",
+        "mail": "sekretariat@wk-kancelaria.example"
+      }
+    }
+  ],
+  "Zamawiajacy": [
+    {
+      "krs": null,
+      "nazwa": "Łódzkie Centrum Kultury i Sztuki",
+      "nip": "9994461130",
+      "regon": "999822071",
+      "prowadzacy_postepowanie": null
+    }
+  ],
+  "ZamowieniePubliczne": {
+    "numer_bzp": "2026/BZP00104488",
+    "numer_postepowania": "LCKiS/ZP/1/2026",
+    "numer_ted": null,
+    "tytul": "Świadczenie usług ochrony osób i mienia w obiektach Łódzkiego Centrum Kultury i Sztuki"
+  }
+}

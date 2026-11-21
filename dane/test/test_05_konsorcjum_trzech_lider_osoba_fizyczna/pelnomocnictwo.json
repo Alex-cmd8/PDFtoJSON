@@ -1,0 +1,55 @@
+{
+  "mocodawca": [
+    {
+      "data": {
+        "imie_nazwisko": "Marek Sowa",
+        "krs": null,
+        "nazwa": "INSTAL-PRO Marek Sowa",
+        "nip": "9998801422",
+        "typ": "osoba_fizyczna"
+      },
+      "podpisujacy": [
+        {
+          "imie_nazwisko": "Marek Sowa"
+        }
+      ]
+    },
+    {
+      "data": {
+        "imie_nazwisko": null,
+        "krs": "9991137806",
+        "nazwa": "Termobud sp. z o.o.",
+        "nip": "9992508817",
+        "typ": "osoba_prawna"
+      },
+      "podpisujacy": [
+        {
+          "imie_nazwisko": "Renata Łukaszewicz"
+        }
+      ]
+    },
+    {
+      "data": {
+        "imie_nazwisko": null,
+        "krs": "9995519006",
+        "nazwa": "Elektra Serwis S.A.",
+        "nip": "9996674103",
+        "typ": "osoba_prawna"
+      },
+      "podpisujacy": [
+        {
+          "imie_nazwisko": "Grzegorz Jasiński"
+        },
+        {
+          "imie_nazwisko": "Monika Fijałkowska"
+        }
+      ]
+    }
+  ],
+  "pelnomocnicy": [
+    {
+      "imie_nazwisko": "Szymon Adamczyk",
+      "pesel": null
+    }
+  ]
+}

@@ -14,7 +14,7 @@ IDS = {
     # dopuszczamy „KRS pod nr / pod numerem 0000…” oraz prefiks kraju w NIP („NIP: PL5271037727”)
     "krs": re.compile(r"\bKRS\W{0,3}(?:pod\s+)?(?:nr|numerem)?\W{0,2}(\d{10})(?!\d)"),
     "nip": re.compile(r"\bNIP\W{0,3}(?:nr\W{0,2})?(?:PL\s?)?(\d{3}[- ]?\d{3}[- ]?\d{2}[- ]?\d{2}|\d{3}[- ]?\d{2}[- ]?\d{2}[- ]?\d{3})(?!\d)"),
-    "regon": re.compile(r"\bREGON\W{0,3}(?:nr\W{0,2})?(\d{9}(?:\d{5})?)(?!\d)"),
+    "regon": re.compile(r"\bREGON\W{0,3}(?:nr\W{0,2})?(\d{3}[- ]?\d{3}[- ]?\d{3}(?:[- ]?\d{5})?)(?!\d)"),
     "pesel": re.compile(r"\bPESEL\W{0,3}(?:nr\W{0,2})?(\d{11})(?!\d)"),
 }
 
@@ -40,7 +40,9 @@ class Lexicon:
         # nazwa z formą prawną; dopuszczamy „sp. z o.o. sp.k.” itp.
         self.company_end_rx = re.compile(rf"(?:{lf})(?=$|[\s,;:)(]|\.)", re.I)
         tl = "|".join(f"(?:{x})" for x in self.titles)
-        self.attorney_rx = re.compile(rf"(?<![{LO}{UP}])(?:{tl})\s*{PERSON_RX}")
+        # między tytułem zawodowym a nazwiskiem może stać stopień naukowy („adw. dr hab. Jan Nowak”)
+        degrees = r"(?:(?:dr|prof|hab|inż|mgr)\.?\s*)*"
+        self.attorney_rx = re.compile(rf"(?<![{LO}{UP}])(?:{tl})\s*{degrees}{PERSON_RX}")
 
     # ---------------------------------------------------------------- podmioty
     def companies(self, text: str) -> list[tuple[int, int, str]]:
@@ -78,6 +80,10 @@ class Lexicon:
             break
         if start is None:
             return None
+        # ostatnia litera nagłówka rozstrzelonego („P E Ł N O M O C N I C T W O Balttec …”)
+        m = re.match(rf"[{UP}]\s+", text[start:pos])
+        if m and re.search(rf"(?:\b[{UP}]\s+){{2}}$", text[:start]):
+            start += m.end()
         # nazwa nie zaczyna się od łącznika
         while True:
             m = re.match(r"(?:i|&|w|na|dla|nr|-)\s+", text[start:pos])

@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 from odwolania2json.config import DEFAULT_CONFIG_DIR, load_config
+from odwolania2json.llm import load_dotenv
 from odwolania2json.pipeline import run
 
 ROOT = Path(__file__).resolve().parent
@@ -22,13 +23,18 @@ def main(argv=None) -> int:
     ap.add_argument("--output", default=str(ROOT / "output"))
     ap.add_argument("--config", default=str(DEFAULT_CONFIG_DIR))
     ap.add_argument("--trace", default=None, help="katalog na ślady ekstrakcji (skąd wzięto każdą wartość)")
+    ap.add_argument("--llm-mode", choices=["off", "fallback", "always"],
+                    help="nadpisuje tryb LLM z konfiguracji (off: tylko reguły)")
     ap.add_argument("-q", "--quiet", action="store_true")
     a = ap.parse_args(argv)
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
     logging.basicConfig(level=logging.WARNING if a.quiet else logging.INFO, format="%(message)s")
 
+    load_dotenv()
     cfg = load_config(a.config)
+    if a.llm_mode:
+        cfg.settings.setdefault("llm", {})["mode_override"] = a.llm_mode
     summary = run(Path(a.input), Path(a.output), cfg, Path(a.trace) if a.trace else None)
     errors = sum(s["error"] for s in summary)
     print(f"Przetworzono {len(summary)} plików PDF, błędów: {errors}. Wyniki: {a.output}")

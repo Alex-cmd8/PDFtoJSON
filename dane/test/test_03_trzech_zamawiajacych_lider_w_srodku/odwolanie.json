@@ -1,0 +1,52 @@
+{
+  "OdwolanieKIO": {
+    "data": "2026-09-24",
+    "czynnosc_dzien": "2026-09-14",
+    "czynnosc_powod_id": 7,
+    "czynnosc_opis": "Zaniechanie odrzucenia oferty",
+    "miejscowosc": "Warszawa"
+  },
+  "Odwolujacy": [
+    {
+      "krs": "9990938271",
+      "nazwa": "Medivio Polska sp. z o.o.",
+      "nip": "9993817264",
+      "regon": "999740612",
+      "przez-pelnomocnika": 1,
+      "pelnomocnik": {
+        "imie_nazwisko": "Bartosz Kołodziej",
+        "nazwa": "Kołodziej Sadowska Adwokaci i Radcowie Prawni sp.k.",
+        "mail": "biuro@ks-legal.example"
+      }
+    }
+  ],
+  "Zamawiajacy": [
+    {
+      "krs": "9992218406",
+      "nazwa": "Szpital Powiatowy w Lesznowoli sp. z o.o.",
+      "nip": "9991203398",
+      "regon": "999305118",
+      "prowadzacy_postepowanie": 0
+    },
+    {
+      "krs": null,
+      "nazwa": "Mazowieckie Centrum Zakupów Medycznych",
+      "nip": "9998140772",
+      "regon": "999662013",
+      "prowadzacy_postepowanie": 1
+    },
+    {
+      "krs": "9997305581",
+      "nazwa": "Centrum Rehabilitacji Wola sp. z o.o.",
+      "nip": "9990662145",
+      "regon": "999418833",
+      "prowadzacy_postepowanie": 0
+    }
+  ],
+  "ZamowieniePubliczne": {
+    "numer_bzp": "2026/BZP00654321",
+    "numer_postepowania": "MCZM-ZP/26/09/K",
+    "numer_ted": "555012-2026",
+    "tytul": "Dostawa sprzętu do diagnostyki obrazowej wraz z instalacją i szkoleniem personelu"
+  }
+}

@@ -1,28 +1,34 @@
 # Słownik zaskarżonych czynności zamawiającego (czynnosc_powod_id → czynnosc_opis).
 # `patterns` sprawdzane są w KOLEJNOŚCI listy – bardziej szczegółowe (zaniechania) przed ogólnymi.
-# Dopasowanie odbywa się na zdaniu „Zamawiający w dniu <data> <czynność>…”.
+# Dopasowanie odbywa się na zdaniu „Zamawiający w dniu <data> <czynność>…” albo na petitum
+# „Wnoszę odwołanie od czynności <rzeczownik>…” – dlatego wzorce obejmują też formy rzeczownikowe.
 czynnosci:
   - id: 10
     opis: Zaniechanie unieważnienia postępowania
-    patterns: ['zaniecha\w* uniewa[żz]nienia', 'nie uniewa[żz]ni[łl]']
+    llm_hint: zamawiający NIE unieważnił postępowania, choć powinien
+    patterns: ['zaniecha\w* uniewa[żz]nienia', 'nie uniewa[żz]ni[łl]', 'zamiast uniewa[żz]ni']
   - id: 7
     opis: Zaniechanie odrzucenia oferty
+    llm_hint: zamawiający NIE odrzucił cudzej oferty, choć powinien
     patterns: ['zaniecha\w* odrzucenia', 'nie odrzuci[łl]']
   - id: 8
     opis: Zaniechanie wykluczenia wykonawcy
+    llm_hint: zamawiający NIE wykluczył innego wykonawcy, choć powinien
     patterns: ['zaniecha\w* wykluczenia', 'nie wykluczy[łl]']
   - id: 9
     opis: Decyzja o unieważnieniu postępowania
     patterns: ['uniewa[żz]ni\w* post[ęe]powani', 'uniewa[żz]nieniu post[ęe]powania']
   - id: 1
     opis: Decyzja o odrzuceniu oferty
-    patterns: ['odrzuci\w* ofert', 'odrzuceniu oferty']
+    llm_hint: odrzucenie oferty odwołującego
+    patterns: ['odrzuci\w* ofert', 'odrzuceni\w* ofert']
   - id: 3
     opis: Decyzja o wykluczeniu wykonawcy
-    patterns: ['wykluczy\w*', 'wykluczeniu']
+    llm_hint: wykluczenie odwołującego
+    patterns: ['wykluczy\w*', 'wykluczeni\w*']
   - id: 2
     opis: Ogłoszenie wyboru oferty
-    patterns: ['wyb[óo]r\w* ofert', 'wyborze ofert', 'dokona\w* wyboru', 'wybra[łl] ofert']
+    patterns: ['wyb[óo]r\w*(?:\s+\S+){0,3}?\s+ofert', 'wyborze ofert', 'dokona\w* wyboru', 'wybra[łl] ofert']
   - id: 5
     opis: Modyfikacja treści SWZ
     patterns: ['zmodyfikowa\w*', 'modyfikac\w*', 'zmieni[łl] tre[śs][ćc]', 'zmian\w* tre[śs]ci (?:SWZ|specyfikacji)']

@@ -1,0 +1,197 @@
+[
+  {
+    "id": "test_01_formaty_dat_i_identyfikatorow",
+    "pliki": {
+      "odwolanie.pdf": "odwolanie.json",
+      "pelnomocnictwo.pdf": "pelnomocnictwo.json",
+      "potwierdzenie_przelewu.pdf": "przelew.json"
+    },
+    "sprawdza": [
+      "NIP z myślnikami (999-541-27-83) i z prefiksem PL ze spacjami (PL 999 330 72 18) – oczekiwane same cyfry",
+      "KRS z zerami wiodącymi (0000412345) – musi zostać stringiem, bez obcinania zer",
+      "14-cyfrowy REGON (jednostka lokalna)",
+      "daty słownie ('dnia 5 maja 2026 r.'), z kropkami, z ukośnikami (30/04/2026), rzymski miesiąc (05.V.2026)",
+      "dystraktory dat w treści (termin składania ofert, data ogłoszenia)",
+      "przelew: kwota ze znakiem minus (-17,00 PLN), rachunki bez 'PL' w formacie NRB, tytuł bez polskich znaków (bank je usunął), numer transakcji z ukośnikami"
+    ],
+    "zalozenia": []
+  },
+  {
+    "id": "test_02_bez_pelnomocnika",
+    "pliki": {
+      "odwolanie.pdf": "odwolanie.json"
+    },
+    "sprawdza": [
+      "Odwołujący działa samodzielnie przez zarząd – brak pełnomocnika ('przez-pelnomocnika': 0, pola pełnomocnika = null)",
+      "w zestawie jest TYLKO odwolanie.pdf – brak pełnomocnictwa i przelewu; parser nie powinien się wywrócić",
+      "Zamawiający – gmina bez KRS"
+    ],
+    "zalozenia": [
+      "Konwencja dla braku pełnomocnika nie występuje w przykładach: przyjęto 'przez-pelnomocnika': 0 i pelnomocnik = {imie_nazwisko: null, nazwa: null, mail: null}."
+    ]
+  },
+  {
+    "id": "test_03_trzech_zamawiajacych_lider_w_srodku",
+    "pliki": {
+      "odwolanie.pdf": "odwolanie.json",
+      "pelnomocnictwo.pdf": "pelnomocnictwo.json",
+      "potwierdzenie_przelewu.pdf": "przelew.json"
+    },
+    "sprawdza": [
+      "3 zamawiających wspólnych; prowadzący postępowanie jest DRUGI na liście → prowadzacy_postepowanie [0, 1, 0]",
+      "zamawiający-lider bez KRS",
+      "Zamawiający podani PRZED Odwołującym",
+      "jednocześnie numer BZP i TED (TED w formacie '2026/S 178-555012' → '555012-2026')",
+      "przelew w układzie 'etykieta nad wartością' w dwóch kolumnach"
+    ],
+    "zalozenia": []
+  },
+  {
+    "id": "test_04_trzech_pelnomocnikow_tytuly",
+    "pliki": {
+      "odwolanie.pdf": "odwolanie.json",
+      "pelnomocnictwo.pdf": "pelnomocnictwo.json",
+      "potwierdzenie_przelewu.pdf": "przelew.json"
+    },
+    "sprawdza": [
+      "3 pełnomocników (w przykładach max 2), dwóch z numerem PESEL",
+      "tytuły przed nazwiskiem: 'adw. dr hab.', 'r. pr. dr', 'apl. r. pr.' – oczekiwane czyste imię i nazwisko",
+      "nazwiska dwuczłonowe z łącznikiem i polskimi znakami (Wróblewski-Ostoja, Nowak-Kowalska, Ślązak, Ćwikliński)",
+      "pełnomocnicy w pełnomocnictwie jako lista numerowana",
+      "kwota 51,00 zł (3 × 17) – wartość spoza zbioru z przykładów",
+      "tylko numer TED (bez BZP) z doklejoną datą"
+    ],
+    "zalozenia": []
+  },
+  {
+    "id": "test_05_konsorcjum_trzech_lider_osoba_fizyczna",
+    "pliki": {
+      "odwolanie.pdf": "odwolanie.json",
+      "pelnomocnictwo.pdf": "pelnomocnictwo.json",
+      "potwierdzenie_przelewu.pdf": "przelew.json"
+    },
+    "sprawdza": [
+      "konsorcjum 3 wykonawców (w przykładach max 2)",
+      "lider konsorcjum to osoba fizyczna (CEIDG, bez KRS) → Odwolujacy[0].krs = null",
+      "pełnomocnictwo: 3 mocodawców, mieszane typy (osoba_fizyczna + 2× osoba_prawna), różna liczba podpisujących (1/1/2)",
+      "podpisujący w roli prokurenta i 'właściciela'"
+    ],
+    "zalozenia": [
+      "Zgodnie z przykładem 41: w odwolanie.json w 'Odwolujacy' wpisywany jest tylko lider konsorcjum."
+    ]
+  },
+  {
+    "id": "test_06_uklad_tabelaryczny",
+    "pliki": {
+      "odwolanie.pdf": "odwolanie.json",
+      "pelnomocnictwo.pdf": "pelnomocnictwo.json",
+      "potwierdzenie_przelewu.pdf": "przelew.json"
+    },
+    "sprawdza": [
+      "dane stron odwołania w tabeli (kolumny: strona / pole / dane) zamiast bloków tekstu",
+      "pełnomocnictwo w formie formularza-tabeli",
+      "przelew z innymi etykietami: 'Nadawca', 'Z rachunku', 'Na rachunek', 'Tytułem', 'Identyfikator transakcji'",
+      "numer transakcji o innym formacie (ze znakami '/')",
+      "daty w formacie ISO w nagłówku"
+    ],
+    "zalozenia": []
+  },
+  {
+    "id": "test_07_dystraktory_w_przelewie",
+    "pliki": {
+      "odwolanie.pdf": "odwolanie.json",
+      "pelnomocnictwo.pdf": "pelnomocnictwo.json",
+      "potwierdzenie_przelewu.pdf": "przelew.json"
+    },
+    "sprawdza": [
+      "przelew z czterema różnymi datami (zlecenia, operacji, księgowania, wygenerowania) – oczekiwana 'Data operacji'",
+      "kilka kwot: prowizja, kwota łączna obciążenia, saldo – oczekiwana kwota przelewu 34,00",
+      "rachunek odbiorcy podany PRZED rachunkiem zleceniodawcy",
+      "dodatkowy numer zlecenia jako dystraktor dla numeru transakcji",
+      "w odwołaniu: dodatkowe daty innych czynności w uzasadnieniu"
+    ],
+    "zalozenia": []
+  },
+  {
+    "id": "test_08_lamanie_stron_i_wyrazow",
+    "pliki": {
+      "odwolanie.pdf": "odwolanie.json",
+      "pelnomocnictwo.pdf": "pelnomocnictwo.json",
+      "potwierdzenie_przelewu.pdf": "przelew.json"
+    },
+    "sprawdza": [
+      "tytuł zamówienia przerwany podziałem strony, ze stopką i nagłówkiem bieżącym pomiędzy częściami",
+      "wyrazy podzielone łącznikiem na końcu linii ('wdro-/żeniem', 'osado-/wego') – oczekiwany tytuł bez łączników",
+      "znak wodny 'KOPIA' na każdej stronie odwołania i pełnomocnictwa",
+      "bieżący nagłówek stron zawierający datę (dystraktor)",
+      "pełnomocnictwo: lista pełnomocników przerwana podziałem strony",
+      "potwierdzenie przelewu z drugą stroną regulaminu"
+    ],
+    "zalozenia": []
+  },
+  {
+    "id": "test_09_skan_bez_warstwy_tekstowej",
+    "pliki": {
+      "odwolanie.pdf": "odwolanie.json",
+      "pelnomocnictwo.pdf": "pelnomocnictwo.json",
+      "potwierdzenie_przelewu.pdf": "przelew.json"
+    },
+    "sprawdza": [
+      "wszystkie trzy PDF-y to skany (obraz w odcieniach szarości, 200 dpi, lekko obrócony, z szumem) BEZ warstwy tekstowej",
+      "sprawdza, czy parser ma ścieżkę OCR / poprawnie zgłasza brak tekstu zamiast zwracać pusty lub zmyślony JSON"
+    ],
+    "zalozenia": []
+  },
+  {
+    "id": "test_10_brak_daty_tylko_ted",
+    "pliki": {
+      "odwolanie.pdf": "odwolanie.json",
+      "pelnomocnictwo.pdf": "pelnomocnictwo.json",
+      "potwierdzenie_przelewu.pdf": "przelew.json"
+    },
+    "sprawdza": [
+      "odwołanie bez daty i miejscowości w nagłówku → data i miejscowosc = null (parser nie może ich zgadywać z treści)",
+      "w treści występuje miejscowość (Zielona Góra) i daty innych zdarzeń – nie powinny trafić do pól 'data'/'miejscowosc'",
+      "tylko numer TED w formacie 'Dz. Urz. UE S: 2026/S 087-123456' → '123456-2026', brak BZP",
+      "nietypowy numer postępowania 'ZP/PN/12/2026/WIM-II'",
+      "czynność: zaniechanie unieważnienia (id 10)"
+    ],
+    "zalozenia": []
+  },
+  {
+    "id": "test_11_wyciag_wiele_operacji_synonimy",
+    "pliki": {
+      "odwolanie.pdf": "odwolanie.json",
+      "pelnomocnictwo.pdf": "pelnomocnictwo.json",
+      "potwierdzenie_przelewu.pdf": "przelew.json"
+    },
+    "sprawdza": [
+      "potwierdzenie w formie wyciągu z 3 operacjami: wpis od odwołania (7 500 zł), opłata skarbowa (17 zł) i wpływ – oczekiwana operacja opłaty skarbowej od pełnomocnictwa",
+      "kwoty z minusem i separatorem tysięcy w tabeli",
+      "czynność 'wybór oferty' opisana innymi słowami ('dokonanie wyboru jako najkorzystniejszej'), z dodatkową, drugorzędną czynnością (zaniechanie odrzucenia) wymienioną później"
+    ],
+    "zalozenia": [
+      "W przelew.json oczekiwana jest opłata skarbowa od pełnomocnictwa (jak we wszystkich przykładach), nie wpis od odwołania."
+    ]
+  },
+  {
+    "id": "test_12_znaki_specjalne_cudzyslowy",
+    "pliki": {
+      "odwolanie.pdf": "odwolanie.json",
+      "pelnomocnictwo.pdf": "pelnomocnictwo.json",
+      "potwierdzenie_przelewu.pdf": "przelew.json"
+    },
+    "sprawdza": [
+      "nazwy z polskimi cudzysłowami w środku („ŻUBR”, „Wodociągi Ziemi Kłodzkiej”) – nie mogą zostać obcięte na cudzysłowie",
+      "tytuł zamówienia z wewnętrznym cudzysłowem, nawiasem, '&' i półpauzą",
+      "NIP/REGON ze spacjami i separatorem '·'",
+      "tytuł dokumentu rozstrzelony ('O D W O Ł A N I E')",
+      "e-mail z '+' (biuro+kio@...)",
+      "mocodawca – osoba fizyczna z nazwą firmy zawierającą cudzysłów; podpis bez funkcji",
+      "czynność: odpowiedzi/wyjaśnienia treści SWZ (id 6)"
+    ],
+    "zalozenia": [
+      "Wewnętrzne cudzysłowy w nazwach i tytule są zachowane w JSON dokładnie jak w dokumencie; usuwany jest tylko zewnętrzny cudzysłów „…” otaczający tytuł zamówienia."
+    ]
+  }
+]

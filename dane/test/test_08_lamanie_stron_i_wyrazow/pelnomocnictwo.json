@@ -1,0 +1,28 @@
+{
+  "mocodawca": [
+    {
+      "data": {
+        "imie_nazwisko": null,
+        "krs": "9994400918",
+        "nazwa": "Hydrotech Rzeszów S.A.",
+        "nip": "9998350271",
+        "typ": "osoba_prawna"
+      },
+      "podpisujacy": [
+        {
+          "imie_nazwisko": "Artur Michalski"
+        }
+      ]
+    }
+  ],
+  "pelnomocnicy": [
+    {
+      "imie_nazwisko": "Dominika Jaworska",
+      "pesel": null
+    },
+    {
+      "imie_nazwisko": "Rafał Pawlak",
+      "pesel": null
+    }
+  ]
+}

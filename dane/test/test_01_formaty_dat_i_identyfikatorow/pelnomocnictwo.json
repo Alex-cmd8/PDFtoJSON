@@ -1,0 +1,24 @@
+{
+  "mocodawca": [
+    {
+      "data": {
+        "imie_nazwisko": null,
+        "krs": "0000412345",
+        "nazwa": "Kormoran Systemy Pomiarowe sp. z o.o.",
+        "nip": "9995412783",
+        "typ": "osoba_prawna"
+      },
+      "podpisujacy": [
+        {
+          "imie_nazwisko": "Tomasz Wilczyński"
+        }
+      ]
+    }
+  ],
+  "pelnomocnicy": [
+    {
+      "imie_nazwisko": "Marta Żurawska",
+      "pesel": null
+    }
+  ]
+}

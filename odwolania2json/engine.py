@@ -74,23 +74,32 @@ class Engine:
         lookahead = spec.get("lookahead", 4)
         for label in spec.get("labels", []):
             lrx = re.compile(r"^\s*(?:" + label + r")" + LABEL_TAIL, re.I)
+            occ = []
             for li, line in enumerate(doc.lines):
                 for ci, cell in enumerate(line.cells):
-                    m = lrx.match(cell.text)
-                    if not m:
-                        continue
-                    rest = cell.text[m.end():].strip()
-                    hit = self._value_after(doc, li, ci, rest, spec, lookahead)
+                    if m := lrx.match(cell.text):
+                        occ.append((li, ci, cell.text[m.end():].strip()))
+            # para „etykieta wartość” w jednej linii ma pierwszeństwo przed nagłówkiem kolumny tabeli
+            # (np. „Kwota” w nagłówku wyciągu vs „Kwota 17,00 PLN” w szczegółach operacji)
+            for below in (False, True):
+                for li, ci, rest in occ:
+                    hit = self._value_after(doc, li, ci, rest, spec, lookahead, below)
                     if hit is not None:
                         v, src_line, extra = hit
                         return Hit(v, f"label:{label}{extra}", src_line.page, src_line.text)
         return None
 
-    def _value_after(self, doc, li, ci, rest, spec, lookahead):
+    def _value_after(self, doc, li, ci, rest, spec, lookahead, below=True):
         line = doc.lines[li]
         label_cell = line.cells[ci]
         is_text = spec.get("type", "text") == "text"
         if is_text:
+            if not below:
+                return None  # tekst: jedno przejście (logika poniżej obejmuje oba przypadki)
+            # układ dwukolumnowy „TYTUŁ | NUMER TRANSAKCJI”: wartość przycinamy do granicy kolumny obok
+            xlim = None
+            if ci + 1 < len(line.cells) and self.is_label(line.cells[ci + 1].text):
+                xlim = line.cells[ci + 1].x0
             parts, start_x = [], None
             if rest:
                 parts.append(rest)
@@ -98,13 +107,24 @@ class Engine:
             elif ci + 1 < len(line.cells) and not self.is_label(line.cells[ci + 1].text):
                 parts.append(line.cells[ci + 1].text)
                 start_x = line.cells[ci + 1].x0
+                # wartość wielolinijkowa wyśrodkowana względem etykiety: linie NAD etykietą
+                # w kolumnie wartości (bez niczego w kolumnie etykiet)
+                up = li - 1
+                while up >= 0 and up >= li - 4:
+                    prev = doc.lines[up]
+                    if (len(prev.cells) == 1 and abs(prev.cells[0].x0 - start_x) <= 8
+                            and prev.cells[0].x0 > label_cell.x1 and not self.is_label(prev.text)):
+                        parts.insert(0, prev.cells[0].text)
+                        up -= 1
+                    else:
+                        break
             j = li + 1
             if not parts:  # wartość pod etykietą
                 while j < len(doc.lines) and j <= li + 2:
                     nxt = doc.lines[j]
                     cells = [c for c in nxt.cells if _overlap(c, label_cell, 20)] or nxt.cells
                     if cells and not self.is_label(cells[0].text):
-                        parts.append(cells[0].text)
+                        parts.append(cells[0].text_before(xlim))
                         start_x = cells[0].x0
                         j += 1
                         break
@@ -118,20 +138,22 @@ class Engine:
                     cands = [c for c in nxt.cells if abs(c.x0 - start_x) <= 8 or abs(c.x0 - label_cell.x0) <= 8]
                     if not cands or self.is_label(cands[0].text) or self.is_label(nxt.text):
                         break
-                    parts.append(cands[0].text)
+                    parts.append(cands[0].text_before(xlim))
                     j += 1
                     limit -= 1
             v = _find_in(" ".join(parts), spec)
             return (v, line, "") if v is not None else None
 
-        # wartości atomowe: reszta komórki → kolejne komórki linii → kolumna poniżej
-        if rest and (v := _find_in(rest, spec)) is not None:
-            return v, line, ""
-        for c in line.cells[ci + 1:]:
-            if self.is_label(c.text):
-                break
-            if (v := _find_in(c.text, spec)) is not None:
+        # wartości atomowe: reszta komórki → kolejne komórki linii → (2. przejście) kolumna poniżej
+        if not below:
+            if rest and (v := _find_in(rest, spec)) is not None:
                 return v, line, ""
+            for c in line.cells[ci + 1:]:
+                if self.is_label(c.text):
+                    break
+                if (v := _find_in(c.text, spec)) is not None:
+                    return v, line, ""
+            return None
         for j in range(li + 1, min(li + 1 + lookahead, len(doc.lines))):
             nxt = doc.lines[j]
             for c in nxt.cells:

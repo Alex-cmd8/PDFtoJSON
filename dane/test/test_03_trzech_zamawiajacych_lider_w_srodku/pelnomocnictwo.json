@@ -1,0 +1,28 @@
+{
+  "mocodawca": [
+    {
+      "data": {
+        "imie_nazwisko": null,
+        "krs": "9990938271",
+        "nazwa": "Medivio Polska sp. z o.o.",
+        "nip": "9993817264",
+        "typ": "osoba_prawna"
+      },
+      "podpisujacy": [
+        {
+          "imie_nazwisko": "Paweł Głowacki"
+        }
+      ]
+    }
+  ],
+  "pelnomocnicy": [
+    {
+      "imie_nazwisko": "Bartosz Kołodziej",
+      "pesel": null
+    },
+    {
+      "imie_nazwisko": "Iwona Sadowska",
+      "pesel": null
+    }
+  ]
+}

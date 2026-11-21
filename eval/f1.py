@@ -129,6 +129,7 @@ def main(argv=None):
     ap.add_argument("--details", action="store_true", help="pokaż każdy błąd")
     ap.add_argument("--strict", action="store_true", help="bez dopasowania rozmytego")
     ap.add_argument("--json-report", help="zapisz raport do pliku JSON")
+    ap.add_argument("--cases", default="*", help="wzorzec nazw katalogów spraw, np. 'przyklad_*'")
     a = ap.parse_args(argv)
     sys.stdout.reconfigure(encoding="utf-8")
 
@@ -136,7 +137,7 @@ def main(argv=None):
     by_doc = collections.defaultdict(collections.Counter)
     by_field = collections.defaultdict(collections.Counter)
     errors = []
-    for case in sorted(p for p in Path(a.gt).iterdir() if p.is_dir()):
+    for case in sorted(p for p in Path(a.gt).glob(a.cases) if p.is_dir()):
         for gt_file in sorted(case.glob("*.json")):
             doc = gt_file.stem
             pf = find_pred(Path(a.pred) / case.name, doc)

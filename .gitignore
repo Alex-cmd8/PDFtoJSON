@@ -6,3 +6,7 @@ output/*
 input/*
 !input/.gitkeep
 trace/
+
+# klucze API i cache odpowiedzi LLM
+.env
+.llm_cache/

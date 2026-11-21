@@ -1,0 +1,38 @@
+{
+  "OdwolanieKIO": {
+    "data": "2026-11-03",
+    "czynnosc_dzien": "2026-10-27",
+    "czynnosc_powod_id": 6,
+    "czynnosc_opis": "Odpowiedzi i wyjaśnienia do SWZ",
+    "miejscowosc": "Kłodzko"
+  },
+  "Odwolujacy": [
+    {
+      "krs": null,
+      "nazwa": "Przedsiębiorstwo Handlowo-Usługowe „ŻUBR” Grzegorz Łęcki",
+      "nip": "9996152207",
+      "regon": "999384015",
+      "przez-pelnomocnika": 1,
+      "pelnomocnik": {
+        "imie_nazwisko": "Zofia Żółkiewska-Dąbrowska",
+        "nazwa": "Kancelaria Radcy Prawnego Zofia Żółkiewska-Dąbrowska",
+        "mail": "biuro+kio@zolkiewska-prawo.example"
+      }
+    }
+  ],
+  "Zamawiajacy": [
+    {
+      "krs": "9998813022",
+      "nazwa": "„Wodociągi Ziemi Kłodzkiej” sp. z o.o.",
+      "nip": "9992046639",
+      "regon": "999731558",
+      "prowadzacy_postepowanie": null
+    }
+  ],
+  "ZamowieniePubliczne": {
+    "numer_bzp": "2026/BZP01002914",
+    "numer_postepowania": "WZK/ZP-2/2026",
+    "numer_ted": null,
+    "tytul": "Dostawa paliw płynnych (ON, Pb95) & olejów smarowych – część nr 2 „Rejon Północ”"
+  }
+}

@@ -15,8 +15,14 @@ def _mocodawcy(text: str, lex: Lexicon, cfg: dict, trace: dict) -> list[dict]:
     zone = text[: _zone_end(text, cfg["grant_phrases"])]
     # nazwy kandydatów: forma prawna albo „pod firmą X,”
     cands = [(s, e, n, "forma_prawna") for s, e, n in lex.companies(zone)]
-    for m in re.finditer(r"pod firm[ąa]\s+[„\"]?(?P<n>[^,„”\"]+?)[”\"]?\s*(?:,|\(|z siedzib)", zone):
+    # „pod firmą X,” – nazwa może zawierać cudzysłowy („PHU „ŻUBR” Jan Nowak”), kończy ją przecinek
+    for m in re.finditer(r"pod firm[ąa]\s+(?P<n>[^,(]+?)\s*(?:,|\(|z siedzib)", zone):
         cands.append((m.start("n"), m.end("n"), m.group("n").strip(), "pod_firma"))
+    # wyliczenie członków konsorcjum „1) X, ul. …” – także przedsiębiorca bez formy prawnej
+    for m in re.finditer(r"(?:^|[\s;:])\d\)\s*(?P<n>[^,;()]{3,120}?),\s*(?:ul\.|al\.|pl\.|os\.|z siedzib)", zone):
+        s, e = m.start("n"), m.end("n")
+        if not any(cs < e and s < ce for cs, ce, _, _ in cands):
+            cands.append((s, e, m.group("n").strip(), "wyliczenie"))
     cands.sort()
     # zostawiamy kandydatów, po których (przed kolejnym kandydatem) jest identyfikator
     ents = []
@@ -36,10 +42,13 @@ def _mocodawcy(text: str, lex: Lexicon, cfg: dict, trace: dict) -> list[dict]:
         if key in seen:
             continue
         seen.add(key)
-        natural = ent["how"] == "pod_firma" or (
+        natural = ent["how"] in ("pod_firma", "wyliczenie") or (
             not ent["ids"]["krs"] and re.search(cfg["natural_person_rx"], zone, re.I))
         person = None
-        if natural:
+        if natural and ent["how"] == "wyliczenie":
+            # firma przedsiębiorcy zawiera jego imię i nazwisko (art. 43⁴ KC) – zwykle na końcu
+            person = " ".join(ent["name"].split()[-2:])
+        elif natural:
             m = re.search(r"niżej podpisan\w*\s+" + PERSON_RX, zone) or re.search(PERSON_RX + r"\s*,?\s*prowadząc\w* działalność", zone)
             person = m.group("person") if m else None
             if not person:  # ostatnie dwa słowa nazwy firmy
@@ -66,8 +75,10 @@ def _pelnomocnicy(text: str, lex: Lexicon, trace: dict) -> list[dict]:
     out = []
     for n in names:
         pos = next(p for p, x in found if x == n)
-        pesel = next((v for p, v in pesels if 0 < p - pos < 200), None)
-        out.append({"imie_nazwisko": n, "pesel": int(pesel) if pesel else None})
+        # PESEL należy do najbliższego pełnomocnika PRZED nim (nie do pierwszego w promieniu 200 znaków)
+        pesel = next((v for p, v in pesels if 0 < p - pos < 200
+                      and max((q for q, _ in found if q < p), default=-1) == pos), None)
+        out.append({"imie_nazwisko": n, "pesel": pesel})  # tekst – jak w danych referencyjnych (i bez utraty wiodącego zera)
     trace["pelnomocnicy"] = {"regula": "tytuł zawodowy + imię i nazwisko", "znalezione": names}
     return out
 
