@@ -1,5 +1,5 @@
 # OCR dla stron bez warstwy tekstowej (skany). Silnik: EasyOCR (Apache 2.0), CPU, bez LLM.
-# Instalacja: pip install -r requirements-ocr.txt
+# Instalacja: pip install -r requirements.txt (EasyOCR jest w zależnościach)
 # Modele (~100 MB) pobierane są przy pierwszym uruchomieniu do models_dir (potem offline).
 enabled: true
 languages: [pl]

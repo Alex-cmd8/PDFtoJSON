@@ -12,7 +12,7 @@ from pathlib import Path
 
 from odwolania2json.config import DEFAULT_CONFIG_DIR, load_config
 from odwolania2json.llm import load_dotenv
-from odwolania2json.pipeline import run
+from odwolania2json.pipeline import environment_warnings, run
 
 ROOT = Path(__file__).resolve().parent
 
@@ -35,6 +35,8 @@ def main(argv=None) -> int:
     cfg = load_config(a.config)
     if a.llm_mode:
         cfg.settings.setdefault("llm", {})["mode_override"] = a.llm_mode
+    for w in environment_warnings(cfg):
+        print(f"UWAGA: {w}", file=sys.stderr)
     summary = run(Path(a.input), Path(a.output), cfg, Path(a.trace) if a.trace else None)
     errors = sum(s["error"] for s in summary)
     print(f"Przetworzono {len(summary)} plików PDF, błędów: {errors}. Wyniki: {a.output}")

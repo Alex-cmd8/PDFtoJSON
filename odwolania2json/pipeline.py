@@ -47,6 +47,23 @@ def _ocr_corrections(result: dict, rules: list, trace: dict) -> dict:
     return result
 
 
+def environment_warnings(cfg: Config) -> list[str]:
+    """Czego brakuje do pełnej jakości (wypisywane przy starcie – brak nie zatrzymuje programu)."""
+    import importlib.util
+    import os
+
+    out = []
+    lcfg = cfg.settings.get("llm", {})
+    key = lcfg.get("api_key_env", "MISTRAL_API_KEY")
+    if lcfg.get("mode_override") != "off" and not os.environ.get(key) and not lcfg.get("allow_anonymous"):
+        out.append(f"Brak klucza API ({key} w pliku .env) – model językowy wyłączony, działają same reguły. "
+                   "Skany i nietypowe sformułowania będą miały mniej uzupełnionych pól.")
+    if cfg.settings.get("ocr", {}).get("enabled", True) and importlib.util.find_spec("easyocr") is None:
+        out.append("EasyOCR nie jest zainstalowany – skany (PDF bez warstwy tekstowej) dadzą pusty wynik. "
+                   "Instalacja: pip install -r requirements.txt")
+    return out
+
+
 def _write_json(path: Path, data) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")

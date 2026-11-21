@@ -2,6 +2,37 @@
 
 **Od dokumentów do danych. Inteligentna transformacja odwołań KIO do modelu JSON**
 
+## Uruchomienie rozwiązania (dla oceniających)
+
+Wymagania: Python **3.13+**, Windows / Linux / macOS, **bez GPU**. Pierwsze uruchomienie instaluje
+zależności (PyTorch CPU + EasyOCR, kilka minut) i pobiera modele OCR (~100 MB) – potrzebny internet.
+
+1. **Klucz API** modelu językowego (Mistral AI, serwery w UE): skopiuj `.env.example` jako `.env`
+   i wpisz `MISTRAL_API_KEY=…` (klucz przekazany w zgłoszeniu). Bez klucza działają same reguły.
+2. **Przetwarzanie folderów** – pliki `input/<sprawa>/*.pdf` → `output/<sprawa>/*.json`
+   (ta sama nazwa pliku; dokument innego rodzaju → `{}`):
+
+   ```
+   start.bat                      # Windows
+   ./start.sh                     # Linux / macOS
+   ```
+
+   albo ręcznie: `pip install -r requirements.txt`, potem `python run.py --input input --output output`.
+3. **Interfejs WWW** – wgrywanie PDF (lub całego folderu sprawy) i podgląd wyników, ze źródłem
+   każdej wartości (reguła / model / poprawka OCR) i pobieraniem JSON jako ZIP:
+
+   ```
+   start_web.bat                  # Windows – otwiera http://127.0.0.1:8000
+   ./start.sh web                 # Linux / macOS
+   ```
+
+Opis rozwiązania, architektura, wyniki testów i ograniczenia: [ROZWIAZANIE.md](ROZWIAZANIE.md).
+Nowy typ dokumentu dodaje się bez zmian w kodzie – plikiem YAML w `config/document_types/`.
+
+---
+
+# Treść wyzwania
+
 # Krótki opis wyzwania
 
 Każdego roku do systemu zamówień publicznych trafiają tysiące dokumentów zawierających kluczowe informacje o postępowaniach, wykonawcach, pełnomocnikach i czynnościach zamawiających. Najczęściej są to dokumenty tekstowe z kluczowymi, jednak ułożonymi w przeróżny sposób, informacjami z reguły na pierwszych trzech stronach. Celem wyzwania jest stworzenie rozwiązania, które automatycznie zamieni wielodokumentową sprawę administracyjną w spójny, ustrukturyzowany model danych JSON gotowy do dalszego wykorzystania przez systemy informatyczne administracji publicznej.

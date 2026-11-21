@@ -31,7 +31,7 @@ from pathlib import Path, PurePosixPath
 
 from odwolania2json.config import DEFAULT_CONFIG_DIR, load_config
 from odwolania2json.llm import load_dotenv
-from odwolania2json.pipeline import process_pdf
+from odwolania2json.pipeline import environment_warnings, process_pdf
 
 ROOT = Path(__file__).resolve().parent
 PAGE = ROOT / "odwolania2json" / "web" / "index.html"
@@ -179,6 +179,8 @@ def main(argv=None) -> int:
     cfg = load_config(a.config)
     if a.llm_mode:
         cfg.settings.setdefault("llm", {})["mode_override"] = a.llm_mode
+    for w in environment_warnings(cfg):
+        print(f"UWAGA: {w}")
     app = App(cfg, Path(a.output))
     srv = ThreadingHTTPServer((a.host, a.port), make_handler(app))
     print(f"Odwołania2JSON: http://{'127.0.0.1' if a.host in ('0.0.0.0', '') else a.host}:{a.port}  (Ctrl+C – koniec)")

@@ -1,0 +1,3 @@
+# skrypty Windows muszą mieć CRLF (cmd źle czyta etykiety/goto przy LF), skrypty sh – LF
+*.bat text eol=crlf
+*.sh text eol=lf

@@ -5,10 +5,11 @@ description: Odwołanie wykonawcy od czynności lub zaniechania zamawiającego
 classify:
   min_score: 5
   rules:
-    - {pattern: '^\s*O\s?D\s?W\s?O\s?[ŁL]\s?A\s?N\s?I\s?E\s*$', weight: 4}
+    # tytuł pisma; OCR: „0 DWOŁ A NIE” (zero zamiast O, przypadkowe spacje)
+    - {pattern: '^\s*[O0]\s*D\s*W\s*[O0]\s*[ŁL]\s*A\s*N\s*I\s*E\s*$', weight: 4}
     - {pattern: 'Odwołujący\s*:', weight: 3}
     - {pattern: 'Krajowej Izby Odwoławczej', weight: 1, where: head}
-    - {pattern: 'zarzut\w* nr|zarzucam|wnosz[ęe] o', weight: 2}
+    - {pattern: 'zarzut\w* nr|zarzucam|wnosz[ęe][\s_]+o', weight: 2}
     - {pattern: 'rachun\w* (?:odbiorcy|beneficjenta|nadawcy)|pe[łl]nomocnictwo przyjmuj', weight: -5}
     # orzeczenia KIO, decyzje, poradniki – zawierają słownictwo odwołania, ale nim nie są
     - {pattern: 'Sygn\.\s*akt|^\s*(?:WYROK|POSTANOWIENIE|DECYZJA|UCHWAŁA)\b|Krajowa Izba Odwoławcza\s*[-–]\s*w składzie', weight: -6, where: head}

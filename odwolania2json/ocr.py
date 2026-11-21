@@ -9,6 +9,7 @@ EasyOCR jest zależnością opcjonalną: bez niej skany dają pusty wynik (z ost
 from __future__ import annotations
 
 import logging
+import time
 from pathlib import Path
 
 log = logging.getLogger("odwolania2json.ocr")
@@ -43,16 +44,42 @@ def _get_reader(cfg: dict):
     except ImportError:
         _unavailable = True
         log.warning("EasyOCR nie jest zainstalowany – strony bez tekstu zostaną pominięte "
-                    "(pip install -r requirements-ocr.txt)")
+                    "(pip install -r requirements.txt)")
         return None
     import os
     import torch
     torch.set_num_threads(cfg.get("threads") or os.cpu_count() or 4)
     models = ROOT / cfg["models_dir"]
     models.mkdir(parents=True, exist_ok=True)
-    _reader = easyocr.Reader(cfg["languages"], gpu=False, model_storage_directory=str(models),
-                             user_network_directory=str(models), verbose=False)
+    # modele (~100 MB) pobierane przy pierwszym użyciu – chwilowy błąd sieci ponawiamy
+    for attempt in range(4):
+        try:
+            _reader = easyocr.Reader(cfg["languages"], gpu=False, model_storage_directory=str(models),
+                                     user_network_directory=str(models), verbose=False)
+            return _reader
+        except OSError as e:  # URLError, przerwane pobieranie
+            if attempt == 3:
+                raise
+            log.warning("Pobieranie modeli OCR nie powiodło się (%s) – ponawiam", e)
+            for part in models.glob("*.zip"):  # niedokończone archiwum
+                part.unlink(missing_ok=True)
+            time.sleep(5 * (attempt + 1))
     return _reader
+
+
+def prepare(cfg: dict | None = None) -> bool:
+    """Pobiera modele OCR z góry (krok instalacji), żeby pierwsze przetwarzanie nie zależało od sieci."""
+    return _get_reader(settings(cfg)) is not None
+
+
+if __name__ == "__main__":  # python -m odwolania2json.ocr  → pobranie modeli
+    import sys
+    from .config import load_config
+
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    ok = prepare(load_config().settings.get("ocr"))
+    print("Modele OCR gotowe." if ok else "OCR niedostępny.")
+    sys.exit(0 if ok else 1)
 
 
 def page_words(pdf_path: Path, page_index: int, cfg: dict) -> list[dict]:

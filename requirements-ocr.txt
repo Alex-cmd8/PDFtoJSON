@@ -1,3 +1,2 @@
-# OCR skanów (opcjonalnie; bez tego skany dają pusty wynik)
+# Zachowane dla zgodności: OCR jest już w requirements.txt
 -r requirements.txt
-easyocr>=1.7

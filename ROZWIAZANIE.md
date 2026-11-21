@@ -79,20 +79,24 @@ Dodaj `config/document_types/<typ>.yaml` z `extractor: rules`, regułami `classi
 polami (`labels` / `patterns` / `type`) i szablonem `output`. Wzorem jest `przelew.yaml`,
 który obsługuje ~15 różnych szablonów bankowych wyłącznie konfiguracją.
 
-## LLM (opcjonalnie): zaskarżona czynność
+## LLM: pola, których ścisłe reguły nie ustaliły
 
-Pola `czynnosc_powod_id`, `czynnosc_opis`, `czynnosc_dzien` mogą być uzupełniane przez model
-językowy przez dowolne API zgodne z OpenAI. Domyślnie: gpt-oss-20b (open-weight, Apache 2.0)
-na OVHcloud AI Endpoints (UE). Dostawcę i model zmienia się w `config/llm.yaml`
-(przykłady dla Mistral AI i Scaleway w komentarzach); prompt i tryb: sekcja `llm`
-w `config/document_types/odwolanie.yaml`.
+Model: **ministral-8b-2512** (Mistral AI, open-weight, Apache 2.0) przez API Mistral AI
+(firma z Francji, serwery w UE). Dowolne API zgodne z OpenAI – dostawcę i model zmienia się
+w `config/llm.yaml`. Model jest pytany **tylko** o:
 
-- `fallback` (domyślnie) – LLM tylko gdy reguły nie znalazły zdania z czynnością,
-- `always` – LLM dla każdego odwołania (porównanie z regułami), `off` – same reguły.
+- zaskarżoną czynność w odwołaniu, gdy nie zadziałał ścisły wzorzec „Zamawiający w dniu <data> <czynność>”
+  (prompt i tryb: sekcja `llm` w `config/document_types/odwolanie.yaml`),
+- pola puste po regułach (sekcja `llm_fill` w YAML każdego typu),
+- typ dokumentu w „szarej strefie” klasyfikacji (np. skan zniekształcony przez OCR).
 
-Odpowiedź modelu jest walidowana: id musi istnieć w słowniku (opis bierzemy ze słownika,
-nie z modelu), data musi występować w tekście. Ślad (`--trace`) pokazuje odpowiedź i decyzję.
-Klucz: zmienna `OVHCLOUD_API_KEY` lub plik `.env` (w `.gitignore`, wzór w `.env.example`).
+Tryby: `fallback` (domyślnie), `always` (porównanie z regułami), `off` – same reguły.
+
+Każda odpowiedź jest walidowana: format (rachunek 26 cyfr, NIP/KRS 10 cyfr, poprawny adres e-mail,
+sygnatura z separatorem…) **i obecność w tekście dokumentu** – wartości wymyślone przez model są
+odrzucane. Ślad (`--trace`, zakładka „Ślad ekstrakcji” w interfejsie WWW) pokazuje pytania,
+odpowiedzi przyjęte i odrzucone.
+Klucz: zmienna `MISTRAL_API_KEY` lub plik `.env` (w `.gitignore`, wzór w `.env.example`).
 Bez klucza działają same reguły.
 
 ```
