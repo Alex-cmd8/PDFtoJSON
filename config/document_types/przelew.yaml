@@ -1,0 +1,105 @@
+# Potwierdzenie przelewu bankowego (opłata skarbowa / wpis od odwołania).
+# Typ obsługiwany w całości przez generyczny silnik reguł – bez kodu Pythona.
+name: przelew
+description: Potwierdzenie wykonania przelewu bankowego
+
+classify:
+  min_score: 5
+  rules:
+    - {pattern: 'potwierdzenie\W+(?:\w+\W+){0,3}(?:przelewu|transakcji|operacji)', weight: 4, where: head}
+    - {pattern: '(?:polecenie|dowód wykonania) przelewu', weight: 3, where: head}
+    - {pattern: 'rachun\w* (?:odbiorcy|beneficjenta|nadawcy|zleceniodawcy|obciąż\w*)|na rachunek|z rachunku', weight: 2}
+    - {pattern: '\bkwot\w*', weight: 1}
+    - {pattern: '\bbank\w*', weight: 1, where: head}
+    - {pattern: 'zarzut|pełnomocnikiem|udzielam\w* pełnomocnictwa|krajowej izby', weight: -4}
+
+extractor: rules
+
+# etykiety, które kończą wartość wielolinijkową (np. tytuł przelewu)
+stop_labels:
+  - 'status'
+  - 'waluta'
+  - 'kana[łl]'
+  - 'tryb'
+  - 'typ operacji'
+  - 'op[łl]ata'
+  - 'nazwa'
+  - 'adres'
+  - 'data \w+'
+  - 'godz\.?'
+  - 'nr klienta'
+  - 'numer \w+'
+  - 'rachunek \w+'
+  - 'p[łl]atnik'
+  - 'odbiorca'
+  - 'beneficjent'
+  - 'nadawca'
+  - 'zleceniodawca'
+  - 'adresat'
+  - 'dane \w+'
+  - 'szczegó[łl]y'
+  - 'z poważaniem'
+  - 'bank nie ponosi'
+  - 'potwierdzenie ma charakter'
+  - '\*{3}'
+  - '-{5,}'
+
+fields:
+  z_rachunku:
+    type: account
+    labels:
+      - 'rachun\w* (?:nadawcy|zleceniodawcy|p[łl]atnika|obciąż\w*|źródłow\w*)'
+      - 'z rachunku(?: nr)?'
+      - '(?:dane )?(?:nadawc\w*|zleceniodawc\w*|p[łl]atnik)'
+    patterns:
+      - 'z rachunku(?: nr)?:? {v}'
+    nth: 0
+  na_rachunek:
+    type: account
+    labels:
+      - 'rachun\w* (?:odbiorcy|beneficjenta|docelow\w*|adresata)'
+      - 'na rachunek(?: nr)?'
+      - '(?:dane )?(?:odbiorc\w*|beneficjent\w*|adresat\w*(?: przelewu)?)'
+    patterns:
+      - 'na rachunek(?: nr)?:? {v}'
+    nth: 1
+  kwota:
+    type: amount
+    labels:
+      - 'kwot\w*(?: (?:operacji|przelewu|transakcji))?'
+      - 'warto[śs][ćc](?: operacji| przelewu)?'
+    patterns:
+      - 'w kwocie {v}'
+  data_operacji:
+    type: date
+    labels:
+      - 'data (?:operacji|transakcji|wykonania|realizacji|ksi[ęe]gowania|zlecenia|obci[ąa]żenia)'
+    patterns:
+      - 'w dniu {v}'
+  numer_transakcji:
+    type: token
+    labels:
+      - 'numer (?:transakcji|operacji|referencyjny)(?: operacji)?'
+      - 'nr (?:ref\.?|referencyjny|transakcji|operacji)'
+      - 'identyfikator (?:operacji|transakcji)'
+      - 'id (?:operacji|transakcji)'
+    patterns:
+      - '(?:numer|nr|identyfikator)\W+(?:\w+\W+){0,2}?{v}'
+      - '\b(?P<v>CEN\d{8,})'
+  tytul:
+    type: text
+    multiline: true
+    labels:
+      - 'tytu[łl] przelewu'
+      - 'tytu[łl]em'
+      - 'tytu[łl]'
+      - 'opis(?: operacji| przelewu| transakcji)?'
+
+output:
+  przelew_bankowy:
+    data_operacji: '{data_operacji}'
+    kwota: '{kwota}'
+    na_rachunek: '{na_rachunek}'
+    numer_transakcji: '{numer_transakcji}'
+    tytul: '{tytul}'
+    z_rachunku: '{z_rachunku}'

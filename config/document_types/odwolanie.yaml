@@ -1,0 +1,65 @@
+# Odwołanie do Prezesa Krajowej Izby Odwoławczej.
+name: odwolanie
+description: Odwołanie wykonawcy od czynności lub zaniechania zamawiającego
+
+classify:
+  min_score: 5
+  rules:
+    - {pattern: '^\s*O\s?D\s?W\s?O\s?[ŁL]\s?A\s?N\s?I\s?E\s*$', weight: 4}
+    - {pattern: 'Odwołujący\s*:', weight: 3}
+    - {pattern: 'Krajowej Izby Odwoławczej', weight: 1, where: head}
+    - {pattern: 'zarzut\w* nr|zarzucam|wnosz[ęe] o', weight: 2}
+    - {pattern: 'rachun\w* (?:odbiorcy|beneficjenta|nadawcy)|pe[łl]nomocnictwo przyjmuj', weight: -5}
+
+extractor: odwolanie
+
+options:
+  # nagłówki sekcji stron (początek linii)
+  section_headers:
+    odwolujacy: '^Odwołując\w*(?:\s*\(.*?\))?\s*:?'
+    zamawiajacy: '^Zamawiając\w*(?:\s*\(.*?\))?\s*:?'
+    inne: '^(?:Prezes Krajowej Izby|Krajowa Izba Odwo|Wykonawca wybrany|Przystępując\w*|Uczestni\w*|dotyczy|O\s?D\s?W\s?O\s?[ŁL]\s?A\s?N\s?I\s?E|Działając|Wartość zamówienia|Wpis od)'
+  # linie, które nie są nazwą podmiotu (adres, identyfikatory, kontakt)
+  non_name_line: '^(?:ul\.|al\.|pl\.|os\.|aleja|\d{2}-\d{3}|KRS|NIP|REGON|tel\.|e-mail|adres|reprezentowan|przedsiębiorca|prowadząc|wpisan|[\w.+-]+@)'
+  # pod-nagłówki podmiotów w sekcji (konsorcjum, zamawiający wspólni)
+  entity_subheader: '^\d+\)\s*.*:\s*$'
+  leader_rx: 'lider|prowadząc\w* postępowanie'
+  # nagłówek pisma: „Miejscowość, dnia DD.MM.RRRR” – szukany na stronach 0..header_max_page
+  header_max_page: 0
+  # strefa z danymi zamówienia (BZP, TED, nr referencyjny, tytuł) – żeby nie łapać numerów
+  # innych postępowań przywołanych w uzasadnieniu
+  zone_start: '\bdotyczy\b'
+  zone_end: 'Działając w imieniu|\bwnosz[ęe]\b|\bZarzut\w*\b|zarzucam|Wartość zamówienia'
+  # zdanie z zaskarżoną czynnością; {date} = data czynności.
+  # Poziomy sprawdzane po kolei: kolejny poziom tylko gdy poprzedni nic nie sklasyfikował.
+  action_triggers:
+    - - 'Zamawiający\s+w\s+dniu\s+{date}'
+    - - '(?:^|[.;:]\s+)(?-i:W)\s+dniu\s+{date}\s*(?:r\.|roku)?,?\s+Zamawiający'
+      - '(?:^|[.;:]\s+)(?-i:P)ismem\s+z\s+dnia\s+{date}\s*(?:r\.|roku)?,?\s+Zamawiający'
+      - 'Zamawiający,?\s+(?:pismem|w\s+piśmie|w\s+informacji|informacją)\s+z\s+dnia\s+{date}'
+      - '(?:^|[.;:]\s+)(?-i:D)nia\s+{date}\s*(?:r\.|roku)?,?\s+Zamawiający'
+
+fields:
+  numer_bzp:
+    type: bzp
+    patterns: ['{v}']
+  numer_ted:
+    type: ted
+    patterns:
+      - '(?:TED|Dzienniku Urzędowym (?:UE|Unii Europejskiej)|Dz\.\s?Urz\.\s?UE|OJ S)\D{0,60}?{v}'
+  numer_postepowania:
+    type: token
+    patterns:
+      - '(?:nr|numer)\s*ref(?:erencyjn\w*|\.)(?: sprawy| postępowania)?\s*:?\s*{v}'
+      - '(?:nr|numer) postępowania\s*:?\s*{v}'
+      - '(?:nr|numer|znak|oznaczenie) sprawy\s*:?\s*{v}'
+      - 'znak postępowania\s*:?\s*{v}'
+      - 'postępowani\w* nr\s*{v}'
+  tytul:
+    type: text
+    # tytuł w cudzysłowie; dopuszczalny jeden poziom zagnieżdżonych cudzysłowów („Hala „Arena” w X”)
+    # oraz dwukropek po „pn.” / „pod nazwą”
+    patterns:
+      - '\bpn\.\s*:?\s*[„"](?P<v>(?:[^„”"]|„[^„”"]*”){5,400})[”"]'
+      - 'pod nazwą\s*:?\s*[„"](?P<v>(?:[^„”"]|„[^„”"]*”){5,400})[”"]'
+      - 'dotyczy\W+(?:\w+\W+){0,12}?[„"](?P<v>(?:[^„”"]|„[^„”"]*”){5,400})[”"]'

@@ -1,0 +1,47 @@
+# Słowniki wspólne dla ekstraktorów. Edycja tego pliku nie wymaga zmian w kodzie.
+
+# formy prawne kończące nazwę podmiotu (regex, od najdłuższych)
+legal_forms:
+  - 'sp\.\s?z\s?o\.\s?o\.\s?sp\.\s?k\.'
+  - 'sp[óo][łl]ka z ograniczon[aą] odpowiedzialno[śs]ci[aą](?:\s+sp[óo][łl]ka komandytowa)?'
+  - 'sp[óo][łl]ka akcyjna'
+  - 'sp[óo][łl]ka jawna'
+  - 'sp[óo][łl]ka komandytowa'
+  - 'sp[óo][łl]ka cywilna'
+  - 'sp\.\s?z\s?o\.\s?o\.'
+  - 'sp\.\s?j\.'
+  - 'sp\.\s?k\.'
+  - 'sp\.\s?p\.'
+  - 'S\.\s?A\.?'
+  - 'S\.\s?K\.\s?A\.'
+  - 's\.\s?c\.'
+
+# tytuły zawodowe pełnomocników (przed imieniem i nazwiskiem)
+attorney_titles:
+  - 'adw\.'
+  - 'adwokat(?:a|owi)?'
+  - 'apl\.\s?adw\.'
+  - 'r\.\s?pr\.'
+  - 'radc(?:a|y|ę|zyni) prawn(?:y|ego|ą|a)'
+  - 'apl\.\s?radc\.'
+  - 'mec\.'
+  - 'Pan(?:a|i|em)?'
+
+# słowa, na których kończy się „cofanie” przy szukaniu początku nazwy
+name_start_stopwords:
+  - 'PEŁNOMOCNICTWO'
+  - 'PROCESOWE'
+  - 'MOCODAWCA'
+  - 'Mocodawca'
+  - 'Mocodawcą'
+  - 'PEŁNOMOCNIK'
+  - 'Odwołujący'
+  - 'Zamawiający'
+  - 'Wykonawca'
+  - 'Za'
+  - 'W'
+  - 'Działając'
+  - 'Pełnomocnictwo'
+  - 'Pełnomocnicy'
+  - 'Dane'
+  - 'Nazwa'

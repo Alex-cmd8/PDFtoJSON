@@ -1,0 +1,28 @@
+# Pełnomocnictwo procesowe do reprezentowania wykonawcy przed KIO.
+name: pelnomocnictwo
+description: Pełnomocnictwo udzielone przez wykonawcę (mocodawcę) pełnomocnikom
+
+classify:
+  min_score: 5
+  rules:
+    - {pattern: 'P\s?E\s?[ŁL]\s?N\s?O\s?M\s?O\s?C\s?N\s?I\s?C\s?T\s?W\s?O', weight: 4, where: head}
+    - {pattern: 'udziela\w* pe[łl]nomocnictwa|ustanawia\w* pe[łl]nomocnik|pe[łl]nomocnictwo przyjmuj|upoważnia\w*\s+(?:adw|r\.\s?pr|radc|pan)', weight: 3}
+    - {pattern: 'umocowan\w*|pe[łl]nomocnictwo obejmuje', weight: 1}
+    - {pattern: 'mocodawc', weight: 2}
+    - {pattern: '\bzarzut\w* nr|wnosz[ęe] o:|^\s*ODWO[ŁL]ANIE\s*$', weight: -5}
+    - {pattern: 'rachun\w* (?:odbiorcy|beneficjenta|nadawcy)|kwota (?:operacji|przelewu)', weight: -5}
+
+extractor: pelnomocnictwo
+
+options:
+  # gdzie kończy się opis mocodawcy (dalej: udzielenie pełnomocnictwa, zakres, postępowanie)
+  grant_phrases:
+    - 'udziela\w* pe[łl]nomocnictwa'
+    - 'ustanawia\w* pe[łl]nomocnik'
+    - 'upoważnia\w*\s+(?:adw|r\.\s?pr|radc|pan)'
+    - '§\s*2'
+    - 'Pe[łl]nomocnictwo udzielone'
+    - 'do reprezentowania'
+    - 'prowadzon\w+ przez'
+  natural_person_rx: 'prowadząc\w* działalność gospodarczą|CEIDG|Centralnej Ewidencji i Informacji'
+  accept_phrase: 'pe[łl]nomocnictwo przyjmuj|przyjmuj[ęe] pe[łl]nomocnictwo|PE[ŁL]NOMOCNIK\s*:?$|^Pe[łl]nomocni(?:k|cy)\s*:?$'

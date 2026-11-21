@@ -1,0 +1,37 @@
+# Słownik zaskarżonych czynności zamawiającego (czynnosc_powod_id → czynnosc_opis).
+# `patterns` sprawdzane są w KOLEJNOŚCI listy – bardziej szczegółowe (zaniechania) przed ogólnymi.
+# Dopasowanie odbywa się na zdaniu „Zamawiający w dniu <data> <czynność>…”.
+czynnosci:
+  - id: 10
+    opis: Zaniechanie unieważnienia postępowania
+    patterns: ['zaniecha\w* uniewa[żz]nienia', 'nie uniewa[żz]ni[łl]']
+  - id: 7
+    opis: Zaniechanie odrzucenia oferty
+    patterns: ['zaniecha\w* odrzucenia', 'nie odrzuci[łl]']
+  - id: 8
+    opis: Zaniechanie wykluczenia wykonawcy
+    patterns: ['zaniecha\w* wykluczenia', 'nie wykluczy[łl]']
+  - id: 9
+    opis: Decyzja o unieważnieniu postępowania
+    patterns: ['uniewa[żz]ni\w* post[ęe]powani', 'uniewa[żz]nieniu post[ęe]powania']
+  - id: 1
+    opis: Decyzja o odrzuceniu oferty
+    patterns: ['odrzuci\w* ofert', 'odrzuceniu oferty']
+  - id: 3
+    opis: Decyzja o wykluczeniu wykonawcy
+    patterns: ['wykluczy\w*', 'wykluczeniu']
+  - id: 2
+    opis: Ogłoszenie wyboru oferty
+    patterns: ['wyb[óo]r\w* ofert', 'wyborze ofert', 'dokona\w* wyboru', 'wybra[łl] ofert']
+  - id: 5
+    opis: Modyfikacja treści SWZ
+    patterns: ['zmodyfikowa\w*', 'modyfikac\w*', 'zmieni[łl] tre[śs][ćc]', 'zmian\w* tre[śs]ci (?:SWZ|specyfikacji)']
+  - id: 6
+    opis: Odpowiedzi i wyjaśnienia do SWZ
+    patterns: ['odpowiedzi (?:i wyja[śs]nie\w* )?(?:na pytania|do)', 'udzieli\w* odpowiedzi', 'wyja[śs]nie\w* tre[śs]ci (?:SWZ|specyfikacji)', 'wyja[śs]nienia do (?:tre[śs]ci )?(?:SWZ|specyfikacji)']
+  - id: 11
+    opis: Opis przedmiotu zamówienia (OPZ)
+    patterns: ['opis\w* przedmiotu zam[óo]wienia', '\bOPZ\b']
+  - id: 4
+    opis: Publikacja specyfikacji warunków zamówienia (SWZ)
+    patterns: ['specyfikacj\w* warunk[óo]w zam[óo]wienia', '\bSWZ\b', 'og[łl]oszeni\w* o zam[óo]wieniu']
