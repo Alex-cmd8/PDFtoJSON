@@ -47,7 +47,13 @@ z progiem podobieństwa 80%. Wyniki:
 | Zbiór | F1 | `--strict` |
 |---|---|---|
 | treningowy `dane/przyklad_*` (60 spraw, 180 PDF) | 1.000 | 1.000 |
-| testy obciążeniowe `dane/test` (12 spraw, 34 PDF) | 0.957 | 418/455 pól; brakujące 37 to wyłącznie skan bez warstwy tekstowej |
+| testy obciążeniowe `dane/test` (12 spraw o innych układach) | 1.000 | |
+| skany UZP `dane/skany` (30 dokumentów, OCR Tesseract) | 0,92–0,96 zależnie od rodzaju | |
+| dokumenty spoza sprawy (`dane/negatywne` + 4 w sprawach) | 16/16 → `{}` | |
+
+Adresy e-mail porównujemy dokładnie (bez progu 80%) – adres jest albo poprawny, albo bezużyteczny.
+Wyniki dotyczą danych, na których dopracowywaliśmy reguły – to górna granica, nie prognoza
+dla nieznanego zbioru testowego.
 
 ```
 python eval/f1.py --gt dane --pred out --cases "przyklad_*"   # tylko sprawy treningowe
