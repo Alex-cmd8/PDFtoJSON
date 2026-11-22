@@ -4,8 +4,10 @@
 
 ## Uruchomienie rozwiązania (dla oceniających)
 
-Wymagania: Python **3.13+**, Windows / Linux / macOS, **bez GPU**. Pierwsze uruchomienie instaluje
-zależności (PyTorch CPU + EasyOCR, kilka minut) i pobiera modele OCR (~100 MB) – potrzebny internet.
+Wymagania: Python **3.13+**, Windows / Linux / macOS, **bez GPU**, oraz **Tesseract OCR** do skanów
+(lokalny, Apache 2.0): Ubuntu `sudo apt install tesseract-ocr tesseract-ocr-pol`,
+Windows `winget install UB-Mannheim.TesseractOCR`. Pierwsze uruchomienie instaluje zależności Pythona
+i w razie potrzeby pobiera model języka polskiego (~20 MB) – potrzebny internet.
 
 1. **Klucz API** modelu językowego (Mistral AI, serwery w UE): skopiuj `.env.example` jako `.env`
    i wpisz `MISTRAL_API_KEY=…` (klucz przekazany w zgłoszeniu). Bez klucza działają same reguły.

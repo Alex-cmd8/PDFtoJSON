@@ -49,7 +49,6 @@ def _ocr_corrections(result: dict, rules: list, trace: dict) -> dict:
 
 def environment_warnings(cfg: Config) -> list[str]:
     """Czego brakuje do pełnej jakości (wypisywane przy starcie – brak nie zatrzymuje programu)."""
-    import importlib.util
     import os
 
     out = []
@@ -58,9 +57,15 @@ def environment_warnings(cfg: Config) -> list[str]:
     if lcfg.get("mode_override") != "off" and not os.environ.get(key) and not lcfg.get("allow_anonymous"):
         out.append(f"Brak klucza API ({key} w pliku .env) – model językowy wyłączony, działają same reguły. "
                    "Skany i nietypowe sformułowania będą miały mniej uzupełnionych pól.")
-    if cfg.settings.get("ocr", {}).get("enabled", True) and importlib.util.find_spec("easyocr") is None:
-        out.append("EasyOCR nie jest zainstalowany – skany (PDF bez warstwy tekstowej) dadzą pusty wynik. "
-                   "Instalacja: pip install -r requirements.txt")
+    ocfg = cfg.settings.get("ocr", {})
+    if ocfg.get("enabled", True):
+        from . import ocr
+
+        if not ocr.available(ocfg):
+            eng = ocr.settings(ocfg)["engine"]
+            how = ("Ubuntu: sudo apt install tesseract-ocr tesseract-ocr-pol; Windows: winget install "
+                   "UB-Mannheim.TesseractOCR" if eng == "tesseract" else "pip install -r requirements.txt")
+            out.append(f"OCR ({eng}) niedostępny – skany (PDF bez warstwy tekstowej) dadzą pusty wynik. {how}")
     return out
 
 

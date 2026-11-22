@@ -1,2 +1,4 @@
-# Zachowane dla zgodności: OCR jest już w requirements.txt
+# Opcjonalny silnik OCR EasyOCR (engine: easyocr w config/ocr.yaml); domyślnie używany jest Tesseract
 -r requirements.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+easyocr>=1.7

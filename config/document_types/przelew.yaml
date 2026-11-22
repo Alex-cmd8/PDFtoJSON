@@ -1,7 +1,7 @@
 # Potwierdzenie przelewu bankowego (opłata skarbowa / wpis od odwołania).
 # Typ obsługiwany w całości przez generyczny silnik reguł – bez kodu Pythona.
 name: przelew
-description: Potwierdzenie wykonania przelewu bankowego
+description: Potwierdzenie wykonania przelewu bankowego (wydruk z banku) – dowolny tytuł, np. wpis od odwołania, opłata skarbowa od pełnomocnictwa
 
 classify:
   min_score: 5
@@ -14,6 +14,8 @@ classify:
     - {pattern: '^przelew (?:krajowy|zagraniczny|elixir|sepa|natychmiastowy|express)', weight: 3, where: head}
     - {pattern: 'rachun\w* (?:odbiorcy|beneficjenta|nadawcy|zleceniodawcy|obciąż\w*)|na rachunek|z rachunku', weight: 2}
     - {pattern: '\bkwot\w*', weight: 1}
+    # pola wydruku bankowego – nie występują w odwołaniach, decyzjach ani ogłoszeniach
+    - {pattern: 'data (?:operacji|księgowania|ksiegowania|waluty|transakcji)', weight: 2}
     - {pattern: '\bbank\w*', weight: 1, where: head}
     - {pattern: 'zarzut|pełnomocnikiem|udzielam\w* pełnomocnictwa|krajowej izby', weight: -4}
 

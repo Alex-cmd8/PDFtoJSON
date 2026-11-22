@@ -19,11 +19,11 @@ if not defined PY (
     echo Wymagany Python 3.13 lub nowszy: https://www.python.org/downloads/
     exit /b 1
 )
-echo Pierwsze uruchomienie: instalacja zaleznosci (PyTorch CPU, EasyOCR - kilka minut)...
+echo Pierwsze uruchomienie: instalacja zaleznosci Pythona...
 %PY% -m venv .venv || exit /b 1
 .venv\Scripts\python -m pip install -q --upgrade pip
 .venv\Scripts\python -m pip install -q -r requirements.txt || exit /b 1
-echo Pobieranie modeli OCR (~100 MB)...
+echo Sprawdzanie OCR (Tesseract, model jezyka polskiego)...
 .venv\Scripts\python -m odwolania2json.ocr
 exit /b 0
 

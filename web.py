@@ -58,8 +58,9 @@ class App:
         llm = _llm_client(self.cfg)
         lcfg = self.cfg.settings.get("llm", {})
         # sprawdzamy tylko instalację – import easyocr/torch trwa kilka sekund
-        ocr = (importlib.util.find_spec("easyocr") is not None
-               and bool(self.cfg.settings.get("ocr", {}).get("enabled", True)))
+        from odwolania2json import ocr as ocr_mod
+        ocfg = self.cfg.settings.get("ocr", {})
+        ocr = bool(ocfg.get("enabled", True)) and ocr_mod.available(ocfg)
         return {"llm": {"available": llm.available, "model": llm.model,
                         "mode": lcfg.get("mode_override") or "fallback"},
                 "ocr": ocr, "types": sorted(self.cfg.doc_types)}

@@ -54,8 +54,8 @@ classify_user_prompt: |
   {types}
   - inny: każdy inny dokument – np. orzeczenie lub postanowienie KIO, wyrok, decyzja administracyjna,
     ogłoszenie o zamówieniu (BZP/TED), pismo urzędu, poradnik, faktura, broszura.
-  Wydruk z banku (szczegóły transakcji, historia, potwierdzenie) to potwierdzenie przelewu także wtedy,
-  gdy tytuł przelewu dotyczy odwołania (np. „wpis od odwołania”).
+  Wydruk z banku (szczegóły transakcji, historia, potwierdzenie) to ZAWSZE potwierdzenie przelewu,
+  niezależnie od tytułu – także wpis od odwołania i opłata skarbowa od pełnomocnictwa.
 
   Zwróć JSON: {{"typ": "<nazwa z listy albo inny>", "uzasadnienie": "<krótko>"}}
 

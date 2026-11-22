@@ -1,16 +1,33 @@
-# OCR dla stron bez warstwy tekstowej (skany). Silnik: EasyOCR (Apache 2.0), CPU, bez LLM.
-# Instalacja: pip install -r requirements.txt (EasyOCR jest w zależnościach)
-# Modele (~100 MB) pobierane są przy pierwszym uruchomieniu do models_dir (potem offline).
+# OCR dla stron bez warstwy tekstowej (skany). Lokalnie, CPU, bez LLM.
 enabled: true
+
+# Silnik: tesseract (domyślny) albo easyocr.
+# Porównanie na 30 skanach UZP (F1 odwołania / pełnomocnictwa / potwierdzenia, czas strony na 2 wątkach):
+#   tesseract  0,934 / 0,954 / 0,851   ~3 s
+#   easyocr    0,901 / 0,967 / 0,826   ~26 s
+engine: tesseract
+
+# Tesseract (Apache 2.0) – program systemowy:
+#   Ubuntu:  sudo apt install tesseract-ocr tesseract-ocr-pol
+#   Windows: winget install UB-Mannheim.TesseractOCR
+# Model języka polskiego (pol.traineddata, tesseract-ocr/tessdata) jest pobierany do tessdata_dir,
+# gdy brak go w systemie (python -m odwolania2json.ocr).
+tesseract:
+  lang: pol
+  psm: 3          # automatyczny podział strony na bloki
+  scale: 4.0      # 72 dpi * 4 ≈ 300 dpi
+  min_conf: 10
+  tessdata_dir: models/tessdata
+
+# EasyOCR (Apache 2.0, PyTorch) – opcjonalnie: pip install -r requirements-ocr.txt
 languages: [pl]
-# skala renderowania strony: 72 dpi * 2 = 144 dpi (wyżej = dokładniej, ale wolniej)
 scale: 2.0
 min_confidence: 0.15
 # parametry detekcji EasyOCR (puste = domyślne). Sprawdzone: low_text 0.3 / text_threshold 0.6
-# zachowują krótkie słowa („i”, „w”), ale sklejają kolumny tabel i gubią całe potwierdzenia
-# przelewów oraz nagłówki z datą – w sumie wynik gorszy, więc zostają wartości domyślne.
+# zachowują krótkie słowa („i”, „w”), ale sklejają kolumny tabel – w sumie wynik gorszy.
 readtext: {}
 models_dir: models/easyocr
+
 # strona z mniejszą liczbą znaków w warstwie tekstowej jest traktowana jak skan
 min_chars_text_layer: 20
 # OCR tylko pierwszych stron (dane kluczowe są na początku pisma); 0 = wszystkie

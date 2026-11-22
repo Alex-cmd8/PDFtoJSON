@@ -1,6 +1,5 @@
-# Odwołania2JSON – wszystkie zależności (Python 3.13+, tylko CPU, wyłącznie open source)
-# PyTorch w wersji CPU (mniejsza, bez CUDA); na Windows/macOS i tak instalowana jest wersja CPU.
---extra-index-url https://download.pytorch.org/whl/cpu
-pdfplumber>=0.11      # tekst i współrzędne słów z PDF (MIT)
+# Odwołania2JSON – zależności Pythona (Python 3.13+, tylko CPU, wyłącznie open source)
+pdfplumber>=0.11      # tekst i współrzędne słów z PDF; renderowanie stron do OCR (MIT / Apache 2.0)
 PyYAML>=6.0           # konfiguracja typów dokumentów (MIT)
-easyocr>=1.7          # OCR skanów na CPU (Apache 2.0); modele ~100 MB pobierane przy 1. uruchomieniu
+# OCR skanów: program Tesseract (Apache 2.0) – instalowany systemowo, patrz config/ocr.yaml.
+# Alternatywny silnik EasyOCR (PyTorch, ~1 GB): pip install -r requirements-ocr.txt
