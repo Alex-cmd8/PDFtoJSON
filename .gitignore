@@ -13,3 +13,7 @@ trace/
 # modele OCR pobierane przy pierwszym uruchomieniu
 models/
 .ocr_cache/
+
+# środowisko instalowane na serwerze (deploy/setup_vm.sh)
+.tools/
+.python/

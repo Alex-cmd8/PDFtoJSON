@@ -28,6 +28,10 @@ i w razie potrzeby pobiera model języka polskiego (~20 MB) – potrzebny intern
    ./start.sh web                 # Linux / macOS
    ```
 
+**Serwer oceny (Ubuntu 24.04, `/opt/solution`):** instalacja `bash deploy/setup_vm.sh`
+(Tesseract, Python 3.13, zależności, test na przykładzie), komenda oceny w `/opt/solution/RUN.md`:
+`sudo bash /opt/solution/repo/deploy/run.sh`. Próba na 2 rdzeniach: 226 PDF (w tym 30 skanów) w 7 min 15 s.
+
 Opis rozwiązania, architektura, wyniki testów i ograniczenia: [ROZWIAZANIE.md](ROZWIAZANIE.md).
 Nowy typ dokumentu dodaje się bez zmian w kodzie – plikiem YAML w `config/document_types/`.
 
